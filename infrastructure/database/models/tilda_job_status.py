@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List
 from sqlmodel import Field, Relationship
 
-from database.base import BaseModel
+from infrastructure.database.base import BaseModel
 if TYPE_CHECKING:
     from .tilda_job import TildaJob
 
