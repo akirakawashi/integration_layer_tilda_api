@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, async_sessionmaker
 from collections.abc import AsyncIterator
+from loguru import logger
 
 from setting.config import database_config
 
@@ -14,6 +15,10 @@ class DatabaseProvider:
     async def init_engine(cls) -> None:
         """Initialize the database engine"""
         if cls._engine is None:
+            logger.debug(
+                f"Creating database engine: pool_size={database_config.pool_size}, "
+                f"max_overflow={database_config.max_overflow}"
+            )
             cls._engine = create_async_engine(
                 database_config.url,
                 echo=database_config.echo,
