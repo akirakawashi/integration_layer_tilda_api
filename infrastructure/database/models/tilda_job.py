@@ -17,19 +17,30 @@ class TildaJob(BaseModel, table=True):
         description="Unique identifier for each Tilda job"
     )
 
-    webhook_event_id: str = Field(
+    tran_id: str = Field(
         nullable=False,
         unique=True,
         index=True,
-        description="Unique identifier for the webhook event from Tilda"
+        description="Unique identifier of the Tilda form submission"
     )
 
-    payload_json: dict = Field(
+    form_id: str = Field(
+        nullable=False,
+        index=True,
+        description="Identifier of the Tilda form"
+    )
+
+    payload: dict = Field(
         sa_column=Column(
             JSONB, 
             nullable=False
             ), 
         description="Raw webhook request data received from Tilda"
+    )
+
+    file_url: str = Field(
+        nullable=False,
+        description="Direct URL of the uploaded file received from Tilda"
     )
 
     tilda_job_status_id: int = Field(
@@ -39,10 +50,40 @@ class TildaJob(BaseModel, table=True):
         description="Reference to the current status of the job"
     )
 
+    next_retry_at: datetime | None = Field(
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=True,
+            index=True
+        ),
+        description="Timestamp when the job may be retried after a recoverable failure"
+    )
+
+    locked_by: str | None = Field(
+        default=None,
+        index=True,
+        description="Identifier of the worker that currently holds the job lease"
+    )
+
+    locked_until: datetime | None = Field(
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=True,
+            index=True
+        ),
+        description="Timestamp when the current worker lease expires"
+    )
+
     attempt_count: int = Field(
         default=0,
         nullable=False,
         description="Number of processing attempts already made"
+    )
+
+    last_error_message: str | None = Field(
+        default=None,
+        sa_column=Column(Text, nullable=True),
+        description="Last human-readable processing error"
     )
 
     date_create: datetime = Field(
