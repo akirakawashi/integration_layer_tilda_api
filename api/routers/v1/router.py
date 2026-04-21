@@ -3,10 +3,8 @@ from urllib.parse import parse_qsl
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from application.accept_tilda_webhook import (
-    AcceptTildaWebhook,
-    AcceptTildaWebhookCommand,
-)
+from application.accept_tilda_webhook import AcceptTildaWebhook
+from application.dto.accept_tilda_webhook import AcceptTildaWebhookCommand
 from api.routers.v1.shemas import TildaWebhookAcceptedResponse
 from infrastructure.database.provider import DatabaseProvider
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
@@ -48,7 +46,7 @@ async def accept_tilda_webhook(
     use_case = AcceptTildaWebhook(
         repository=TildaJobRepository(session=session),
     )
-    
+
     result = await use_case.execute(
         AcceptTildaWebhookCommand(
             tran_id=tran_id,

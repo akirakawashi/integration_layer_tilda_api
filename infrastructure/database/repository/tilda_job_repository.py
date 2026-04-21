@@ -1,8 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.database.models.tilda_job import TildaJob
-from infrastructure.database.models.tilda_job_status import TildaJobStatus
+from infrastructure.database.models import TildaJob
 
 
 class TildaJobRepository:
@@ -13,14 +12,6 @@ class TildaJobRepository:
         statement = select(TildaJob).where(TildaJob.tran_id == tran_id)
         result = await self._session.execute(statement)
         return result.scalar_one_or_none()
-
-    async def get_status_id_by_code(self, status_code: str) -> int:
-        statement = select(TildaJobStatus).where(TildaJobStatus.status_code == status_code)
-        result = await self._session.execute(statement)
-        status = result.scalar_one_or_none()
-        if status is None or status.tilda_job_status_id is None:
-            raise ValueError(f"Tilda job status '{status_code}' is not configured")
-        return status.tilda_job_status_id
 
     async def create_job(
         self,
