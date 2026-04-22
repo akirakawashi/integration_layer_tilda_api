@@ -15,7 +15,8 @@ dependencies = [
     "sqlmodel (>=0.0.38,<0.0.39)",
     "asyncpg (>=0.31.0,<0.32.0)",
     "loguru (>=0.7.3,<0.8.0)",
-    "aiokafka (>=0.13.0,<0.14.0)"
+    "aiokafka (>=0.13.0,<0.14.0)",
+    "paramiko (>=4.0.0,<5.0.0)"
 ]
 
 [tool.poetry.dependencies]
