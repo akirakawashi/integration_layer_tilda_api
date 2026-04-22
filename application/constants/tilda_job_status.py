@@ -6,3 +6,4 @@ class TildaJobStatusId(IntEnum):
     PROCESSING = 2
     DONE = 3
     FAILED = 4
+    RETRY_WAIT = 5
