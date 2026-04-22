@@ -1,4 +1,6 @@
 from setting.config import (
+    APP_TIMEZONE,
+    APP_TIMEZONE_INFO,
     app_config,
     database_config,
     file_downloader_config,
@@ -7,6 +9,8 @@ from setting.config import (
 )
 
 __all__ = [
+    "APP_TIMEZONE",
+    "APP_TIMEZONE_INFO",
     "app_config",
     "database_config",
     "file_downloader_config",
