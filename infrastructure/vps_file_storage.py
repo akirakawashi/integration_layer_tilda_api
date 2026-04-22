@@ -2,10 +2,10 @@ import asyncio
 import posixpath
 import socket
 import uuid
-from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import quote
 
+from infrastructure.dto import StoredFileResult
 from setting import vps_storage_config
 
 
@@ -15,12 +15,6 @@ class VpsStorageConfigurationError(RuntimeError):
 
 class VpsStorageTemporaryError(RuntimeError):
     pass
-
-
-@dataclass(slots=True)
-class StoredFileResult:
-    stored_file_path: str
-    stored_file_url: str | None = None
 
 
 class VpsFileStorage:

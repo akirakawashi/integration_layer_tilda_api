@@ -1,21 +1,14 @@
 import asyncio
-from dataclasses import dataclass
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from urllib.parse import unquote, urlparse
 from urllib.request import Request, urlopen
 
+from infrastructure.dto import DownloadedFile
 from setting import file_downloader_config
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-@dataclass(slots=True)
-class DownloadedFile:
-    path: Path
-    file_name: str
-    content_type: str | None = None
-    size_bytes: int | None = None
 
 
 class FileDownloader:

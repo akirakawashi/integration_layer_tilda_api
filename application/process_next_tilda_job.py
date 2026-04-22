@@ -7,7 +7,8 @@ from application.dto.process_next_tilda_job import (
     ProcessNextTildaJobResult,
 )
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
-from infrastructure.file_downloader import DownloadedFile, FileDownloader
+from infrastructure.dto import DownloadedFile
+from infrastructure.file_downloader import FileDownloader
 from infrastructure.vps_file_storage import (
     VpsFileStorage,
     VpsStorageConfigurationError,
