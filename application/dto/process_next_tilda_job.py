@@ -3,10 +3,10 @@ from dataclasses import dataclass
 
 @dataclass(slots=True)
 class ProcessNextTildaJobCommand:
-    worker_id: str = "manual-worker"
-    lock_seconds: int = 300
-    retry_delay_seconds: int = 300
-    max_attempts: int = 10 # можно убрать
+    worker_id: str
+    lock_seconds: int
+    retry_delay_seconds: int
+    max_attempts: int
 
 
 @dataclass(slots=True)

@@ -6,6 +6,7 @@ from setting.config import (
     file_downloader_config,
     kafka_config,
     vps_storage_config,
+    worker_config,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "file_downloader_config",
     "kafka_config",
     "vps_storage_config",
+    "worker_config",
 ]

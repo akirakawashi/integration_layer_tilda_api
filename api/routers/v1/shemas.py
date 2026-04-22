@@ -11,25 +11,3 @@ class TildaWebhookAcceptedResponse(BaseModel):
         default=False,
         description="Whether this webhook had already been saved before"
     )
-
-
-class ProcessNextTildaJobResponse(BaseModel):
-    processed: bool = Field(description="Whether a queued job was picked for processing")
-    status: str = Field(description="Processing status for the picked job")
-    message: str = Field(description="Human-readable processing result")
-    tilda_job_id: int | None = Field(
-        default=None,
-        description="Processed Tilda job identifier"
-    )
-    tran_id: str | None = Field(
-        default=None,
-        description="Processed Tilda submission identifier"
-    )
-    stored_file_path: str | None = Field(
-        default=None,
-        description="Remote VPS path of the uploaded file when available"
-    )
-    stored_file_url: str | None = Field(
-        default=None,
-        description="Public URL of the uploaded file when available"
-    )

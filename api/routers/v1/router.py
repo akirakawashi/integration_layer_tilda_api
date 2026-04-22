@@ -6,17 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from application.accept_tilda_webhook import AcceptTildaWebhook
 from application.dto.accept_tilda_webhook import AcceptTildaWebhookCommand
-from application.dto.process_next_tilda_job import ProcessNextTildaJobCommand
-from application.process_next_tilda_job import ProcessNextTildaJob
 from api.routers.v1.shemas import (
-    ProcessNextTildaJobResponse,
     TildaWebhookAcceptedResponse,
 )
 from api.routers.v1.helpers import extract_tilda_file_url
 from infrastructure.database.provider import DatabaseProvider
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
-from infrastructure.file_downloader import FileDownloader
-from infrastructure.vps_file_storage import VpsFileStorage
 
 router = APIRouter(tags=["tilda"])
 
@@ -76,34 +71,4 @@ async def accept_tilda_webhook(
         tilda_job_id=result.tilda_job_id,
         tran_id=result.tran_id,
         duplicate=result.duplicate,
-    )
-
-
-@router.post(
-    "/jobs/process-next",
-    summary="Process the next queued Tilda job",
-    response_model=ProcessNextTildaJobResponse,
-    status_code=status.HTTP_200_OK,
-)
-async def process_next_tilda_job(
-    session: AsyncSession = Depends(DatabaseProvider.get_session)
-) -> ProcessNextTildaJobResponse:
-    use_case = ProcessNextTildaJob(
-        repository=TildaJobRepository(session=session),
-        file_downloader=FileDownloader(),
-        file_storage=VpsFileStorage(),
-    )
-
-    result = await use_case.execute(
-        ProcessNextTildaJobCommand(worker_id="api-manual-worker")
-    )
-
-    return ProcessNextTildaJobResponse(
-        processed=result.processed,
-        status=result.status,
-        message=result.message,
-        tilda_job_id=result.tilda_job_id,
-        tran_id=result.tran_id,
-        stored_file_path=result.stored_file_path,
-        stored_file_url=result.stored_file_url,
     )

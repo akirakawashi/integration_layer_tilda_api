@@ -179,8 +179,50 @@ class FileDownloaderConfig(BaseSettings):
         }
 
 
+class WorkerConfig(BaseSettings):
+    """Background worker configuration settings"""
+
+    model_config = SettingsConfigDict(
+        env_prefix="WORKER_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    id: str = Field(
+        default="tilda-worker",
+        description="Stable identifier of the worker instance"
+    )
+    poll_interval_seconds: int = Field(
+        default=5,
+        description="Delay before polling again when there are no ready jobs"
+    )
+    error_backoff_seconds: int = Field(
+        default=10,
+        description="Delay after unexpected worker loop errors"
+    )
+    lock_seconds: int = Field(
+        default=300,
+        description="Lease duration for claimed jobs"
+    )
+    retry_delay_seconds: int = Field(
+        default=300,
+        description="Delay before retrying retryable job failures"
+    )
+    max_attempts: int = Field(
+        default=10,
+        description="Maximum processing attempts for one job"
+    )
+    shutdown_grace_seconds: int = Field(
+        default=30,
+        description="Maximum graceful shutdown wait time"
+    )
+
+
 app_config = AppConfig()  
 database_config = DatabaseConfig()
 kafka_config = KafkaConfig()
 vps_storage_config = VpsStorageConfig()
 file_downloader_config = FileDownloaderConfig()
+worker_config = WorkerConfig()
