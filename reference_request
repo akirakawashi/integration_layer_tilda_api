@@ -26,3 +26,10 @@ Name=%D0%9A%D1%80%D0%B8%D1%81%D1%82%D0%B8%D0%BD%D0%B0+%D0%A1%D0%BC%D0%B5%D1%82%D
 curl -X POST "http://localhost:8003/api/v1/webhooks/tilda" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   --data-raw "Name=%D1%82%D0%B5%D1%81%D1%82&Name_2=%D1%82%D0%B5%D1%81%D1%82&Name_3=%D1%82%D0%B5%D1%81%D1%82&Name_4=%D1%82%D0%B5%D1%81%D1%82&Name_5=%D1%82%D0%B5%D1%81%D1%82&Name_6=%D1%82%D0%B5%D1%81%D1%82&Phone=%2B7+%28999%29+549-10-00&Email=akirakawashi%40yandex.ru&Name_7=test&Name_8=test&Name_9=test&Name_10=test&Name_11=test&Name_12=test&%D0%A2%D0%B8%D0%BF_%D1%80%D0%B0%D0%B1%D0%BE%D1%82=%D0%A0%D0%B5%D0%BC%D0%BE%D0%BD%D1%82%D0%BD%D1%8B%D0%B5%3B+%D0%A1%D1%82%D1%80%D0%BE%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D0%BE-%D0%BC%D0%BE%D0%BD%D1%82%D0%B0%D0%B6%D0%BD%D1%8B%D0%B5%3B+%D0%9F%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%BD%D1%8B%D0%B5&Checkbox=yes&%D0%9F%D1%80%D0%B8%D0%BA%D1%80%D0%B5%D0%BF%D0%B8%D1%82%D0%B5_%D1%84%D0%B0%D0%B9%D0%BB%D1%8B=https%3A%2F%2Ftupwidget.com%2F79317467725bd4a472dd1e9aaddc3d84%2F1_tilda52207760.xlsx&tranid=14037579%3A8342331603&formid=form2037073121"
+
+
+ssh -NT \
+  -o ServerAliveInterval=30 \
+  -o ServerAliveCountMax=3 \
+  -R 0.0.0.0:18003:127.0.0.1:8003 \
+  root@2.26.73.96

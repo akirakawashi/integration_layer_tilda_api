@@ -93,6 +93,66 @@ class KafkaConfig(BaseSettings):
         ]
 
 
+class GoogleDriveConfig(BaseSettings):
+    """Google Drive configuration settings"""
+
+    model_config = SettingsConfigDict(
+        env_prefix="GOOGLE_DRIVE_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    access_token: SecretStr = Field(
+        default=SecretStr(""),
+        description="OAuth access token used for Google Drive uploads"
+    )
+    folder_id: str | None = Field(
+        default=None,
+        description="Optional Google Drive folder id for uploaded files"
+    )
+    timeout_seconds: int = Field(
+        default=60,
+        description="Upload timeout for Google Drive requests"
+    )
+
+
+class FileDownloaderConfig(BaseSettings):
+    """File downloader configuration settings"""
+
+    model_config = SettingsConfigDict(
+        env_prefix="FILE_DOWNLOADER_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    dir: str = Field(
+        default="storage/tilda_downloads",
+        description="Project-relative directory for downloaded Tilda files"
+    )
+    max_size_mb: int = Field(
+        default=25,
+        description="Maximum allowed size for downloaded files in megabytes"
+    )
+    allowed_extensions: str = Field(
+        default="pdf,doc,docx,xls,xlsx,csv,png,jpg,jpeg",
+        description="Comma-separated whitelist of allowed file extensions"
+    )
+
+    @property
+    def allowed_extensions_set(self) -> set[str]:
+        return {
+            extension.strip().lower().lstrip(".")
+            for extension in self.allowed_extensions.split(",")
+            if extension.strip()
+        }
+
+
 app_config = AppConfig()  
 database_config = DatabaseConfig()
 kafka_config = KafkaConfig()
+google_drive_config = GoogleDriveConfig()
+file_downloader_config = FileDownloaderConfig()

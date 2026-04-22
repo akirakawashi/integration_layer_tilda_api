@@ -5,9 +5,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from application.accept_tilda_webhook import AcceptTildaWebhook
 from application.dto.accept_tilda_webhook import AcceptTildaWebhookCommand
-from api.routers.v1.shemas import TildaWebhookAcceptedResponse
+from application.dto.process_next_tilda_job import ProcessNextTildaJobCommand
+from application.process_next_tilda_job import ProcessNextTildaJob
+from api.routers.v1.shemas import (
+    ProcessNextTildaJobResponse,
+    TildaWebhookAcceptedResponse,
+)
 from infrastructure.database.provider import DatabaseProvider
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
+from infrastructure.file_downloader import FileDownloader
+from infrastructure.google_drive_client import GoogleDriveClient
 
 router = APIRouter(tags=["tilda"])
 
@@ -60,4 +67,33 @@ async def accept_tilda_webhook(
         tilda_job_id=result.tilda_job_id,
         tran_id=result.tran_id,
         duplicate=result.duplicate,
+    )
+
+
+@router.post(
+    "/jobs/process-next",
+    summary="Process the next queued Tilda job",
+    response_model=ProcessNextTildaJobResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def process_next_tilda_job(
+    session: AsyncSession = Depends(DatabaseProvider.get_session)
+) -> ProcessNextTildaJobResponse:
+    use_case = ProcessNextTildaJob(
+        repository=TildaJobRepository(session=session),
+        file_downloader=FileDownloader(),
+        google_drive_client=GoogleDriveClient(),
+    )
+
+    result = await use_case.execute(
+        ProcessNextTildaJobCommand(worker_id="api-manual-worker")
+    )
+
+    return ProcessNextTildaJobResponse(
+        processed=result.processed,
+        status=result.status,
+        message=result.message,
+        tilda_job_id=result.tilda_job_id,
+        tran_id=result.tran_id,
+        google_drive_file_id=result.google_drive_file_id,
     )

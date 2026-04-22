@@ -157,6 +157,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Downloaded Tilda files
+storage/tilda_downloads/*
+!storage/tilda_downloads/.gitkeep
+
 # Spyder project settings
 .spyderproject
 .spyproject
