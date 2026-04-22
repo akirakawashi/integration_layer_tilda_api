@@ -14,21 +14,20 @@ class AcceptTildaWebhook:
         self,
         command: AcceptTildaWebhookCommand,
     ) -> AcceptTildaWebhookResult:
-        existing_job = await self._repository.get_by_tran_id(command.tran_id)
-        if existing_job is not None:
-            return AcceptTildaWebhookResult(
-                tilda_job_id=existing_job.tilda_job_id,
-                tran_id=existing_job.tran_id,
-                duplicate=True,
-            )
-
-        job = await self._repository.create_job(
+        job, duplicate = await self._repository.create_job_or_get_existing(
             tran_id=command.tran_id,
             form_id=command.form_id,
             file_url=command.file_url,
             payload=command.payload,
             status_id=TildaJobStatusId.QUEUED,
         )
+
+        if duplicate:
+            return AcceptTildaWebhookResult(
+                tilda_job_id=job.tilda_job_id,
+                tran_id=job.tran_id,
+                duplicate=True,
+            )
 
         return AcceptTildaWebhookResult(
             tilda_job_id=job.tilda_job_id,
