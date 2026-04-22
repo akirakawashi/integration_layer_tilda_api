@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+from urllib.error import HTTPError, URLError
+
 from application.constants.tilda_job_status import TildaJobStatusId
 from application.dto.process_next_tilda_job import (
     ProcessNextTildaJobCommand,
@@ -5,7 +8,11 @@ from application.dto.process_next_tilda_job import (
 )
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
 from infrastructure.file_downloader import DownloadedFile, FileDownloader
-from infrastructure.google_drive_client import GoogleDriveClient
+from infrastructure.google_drive_client import (
+    GoogleDriveClient,
+    GoogleDriveConfigurationError,
+)
+from setting import APP_TIMEZONE_INFO
 
 
 class ProcessNextTildaJob:
@@ -19,12 +26,25 @@ class ProcessNextTildaJob:
         self._file_downloader = file_downloader
         self._google_drive_client = google_drive_client
 
+    def _is_retryable(self, exc: Exception) -> bool:
+        if isinstance(exc, (ValueError, GoogleDriveConfigurationError)):
+            return False
+
+        if isinstance(exc, HTTPError):
+            return exc.code in {408, 429, 500, 502, 503, 504}
+
+        if isinstance(exc, (URLError, TimeoutError)):
+            return True
+
+        return False
+
     async def execute(
         self,
         command: ProcessNextTildaJobCommand,
     ) -> ProcessNextTildaJobResult:
-        job = await self._repository.claim_next_queued_job(
+        job = await self._repository.claim_next_ready_job(
             queued_status_id=TildaJobStatusId.QUEUED,
+            retry_wait_status_id=TildaJobStatusId.RETRY_WAIT,
             processing_status_id=TildaJobStatusId.PROCESSING,
             locked_by=command.worker_id,
             lock_seconds=command.lock_seconds,
@@ -60,16 +80,37 @@ class ProcessNextTildaJob:
                 google_drive_file_id=upload_result.file_id,
             )
         except Exception as exc:
+            error_message = str(exc)
+
+            if self._is_retryable(exc) and job.attempt_count < command.max_attempts:
+                retry_at = datetime.now(APP_TIMEZONE_INFO) + timedelta(
+                    seconds=command.retry_delay_seconds
+                )
+                await self._repository.mark_retry_wait(
+                    job_id=job.tilda_job_id,
+                    retry_wait_status_id=TildaJobStatusId.RETRY_WAIT,
+                    error_message=error_message,
+                    retry_at=retry_at,
+                )
+
+                return ProcessNextTildaJobResult(
+                    processed=True,
+                    status="retry_wait",
+                    message=error_message,
+                    tilda_job_id=job.tilda_job_id,
+                    tran_id=job.tran_id,
+                )
+
             await self._repository.mark_failed(
                 job_id=job.tilda_job_id,
                 failed_status_id=TildaJobStatusId.FAILED,
-                error_message=str(exc),
+                error_message=error_message,
             )
 
             return ProcessNextTildaJobResult(
                 processed=True,
                 status="failed",
-                message=str(exc),
+                message=error_message,
                 tilda_job_id=job.tilda_job_id,
                 tran_id=job.tran_id,
             )
