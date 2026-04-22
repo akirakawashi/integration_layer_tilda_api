@@ -5,6 +5,8 @@ from dataclasses import dataclass
 class ProcessNextTildaJobCommand:
     worker_id: str = "manual-worker"
     lock_seconds: int = 300
+    retry_delay_seconds: int = 300
+    max_attempts: int = 10 # можно убрать
 
 
 @dataclass(slots=True)
