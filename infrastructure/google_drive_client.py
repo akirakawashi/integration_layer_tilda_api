@@ -8,6 +8,10 @@ from urllib.request import Request, urlopen
 from setting import google_drive_config
 
 
+class GoogleDriveConfigurationError(RuntimeError): # TODO сделать единный обработчик ошибок
+    pass
+
+
 @dataclass(slots=True)
 class GoogleDriveUploadResult:
     file_id: str
@@ -41,7 +45,9 @@ class GoogleDriveClient:
         content_type: str | None = None,
     ) -> GoogleDriveUploadResult:
         if not self._access_token:
-            raise RuntimeError("Google Drive access token is not configured")
+            raise GoogleDriveConfigurationError(
+                "Google Drive access token is not configured"
+            )
 
         metadata: dict[str, object] = {"name": file_name}
         if self._folder_id:
