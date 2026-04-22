@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, DateTime, func
+from sqlalchemy import Column, DateTime, Text, func
 from sqlmodel import Field, Relationship
 
 from infrastructure.database.base import BaseModel
@@ -30,6 +30,12 @@ class TildaJobStatusHistory(BaseModel, table=True):
         foreign_key="tilda_job_status.tilda_job_status_id",
         nullable=False,
         description="Reference to the job status at the moment of the change"
+    )
+
+    error_message: str | None = Field(
+        default=None,
+        sa_column=Column(Text, nullable=True),
+        description="Optional human-readable error for this status transition"
     )
 
     date_create: datetime = Field(
