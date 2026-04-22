@@ -36,6 +36,10 @@ class AppConfig(BaseSettings):
         default="/api/v1",
         description="API prefix"
     )
+    db_schema: str = Field(
+        default="integration_tilda",
+        description="Database schema used by this service"
+    )
 
 class DatabaseConfig(BaseSettings):
     """Database configuration settings"""

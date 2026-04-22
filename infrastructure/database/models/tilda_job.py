@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Column, DateTime, Field, Relationship
 
 from infrastructure.database.base import BaseModel
+from setting.config import app_config
 if TYPE_CHECKING:
     from .tilda_job_status import TildaJobStatus
 
@@ -44,7 +45,7 @@ class TildaJob(BaseModel, table=True):
     )
 
     tilda_job_status_id: int = Field(
-        foreign_key="tilda_job_status.tilda_job_status_id",
+        foreign_key=f"{app_config.db_schema}.tilda_job_status.tilda_job_status_id",
         nullable=False,
         index=True,
         description="Reference to the current status of the job"

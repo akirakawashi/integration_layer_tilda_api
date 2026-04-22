@@ -1,6 +1,8 @@
 from sqlalchemy import MetaData
 from sqlmodel import SQLModel
 
+from setting.config import app_config
+
 
 convention = {
     "ix": "ix_%(column_0_label)s",
@@ -11,4 +13,7 @@ convention = {
 }
 
 class BaseModel(SQLModel):
-    metadata = MetaData(naming_convention=convention)
+    metadata = MetaData(
+        schema=app_config.db_schema,
+        naming_convention=convention,
+    )

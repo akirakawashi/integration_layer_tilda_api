@@ -5,6 +5,7 @@ from sqlalchemy import Column, DateTime, Text, func
 from sqlmodel import Field, Relationship
 
 from infrastructure.database.base import BaseModel
+from setting.config import app_config
 
 if TYPE_CHECKING:
     from .tilda_job import TildaJob
@@ -21,13 +22,13 @@ class TildaJobStatusHistory(BaseModel, table=True):
     )
 
     tilda_job_id: int = Field(
-        foreign_key="tilda_job.tilda_job_id",
+        foreign_key=f"{app_config.db_schema}.tilda_job.tilda_job_id",
         nullable=False,
         description="Reference to the related Tilda job"
     )
 
     tilda_job_status_id: int = Field(
-        foreign_key="tilda_job_status.tilda_job_status_id",
+        foreign_key=f"{app_config.db_schema}.tilda_job_status.tilda_job_status_id",
         nullable=False,
         description="Reference to the job status at the moment of the change"
     )
