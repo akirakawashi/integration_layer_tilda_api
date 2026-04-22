@@ -16,7 +16,7 @@ from api.routers.v1.helpers import extract_tilda_file_url
 from infrastructure.database.provider import DatabaseProvider
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
 from infrastructure.file_downloader import FileDownloader
-from infrastructure.google_drive_client import GoogleDriveClient
+from infrastructure.vps_file_storage import VpsFileStorage
 
 router = APIRouter(tags=["tilda"])
 
@@ -91,7 +91,7 @@ async def process_next_tilda_job(
     use_case = ProcessNextTildaJob(
         repository=TildaJobRepository(session=session),
         file_downloader=FileDownloader(),
-        google_drive_client=GoogleDriveClient(),
+        file_storage=VpsFileStorage(),
     )
 
     result = await use_case.execute(
@@ -104,5 +104,6 @@ async def process_next_tilda_job(
         message=result.message,
         tilda_job_id=result.tilda_job_id,
         tran_id=result.tran_id,
-        google_drive_file_id=result.google_drive_file_id,
+        stored_file_path=result.stored_file_path,
+        stored_file_url=result.stored_file_url,
     )

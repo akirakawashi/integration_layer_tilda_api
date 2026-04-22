@@ -16,4 +16,5 @@ class ProcessNextTildaJobResult:
     message: str
     tilda_job_id: int | None = None
     tran_id: str | None = None
-    google_drive_file_id: str | None = None
+    stored_file_path: str | None = None
+    stored_file_url: str | None = None

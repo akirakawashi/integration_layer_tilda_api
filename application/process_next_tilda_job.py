@@ -8,9 +8,10 @@ from application.dto.process_next_tilda_job import (
 )
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
 from infrastructure.file_downloader import DownloadedFile, FileDownloader
-from infrastructure.google_drive_client import (
-    GoogleDriveClient,
-    GoogleDriveConfigurationError,
+from infrastructure.vps_file_storage import (
+    VpsFileStorage,
+    VpsStorageConfigurationError,
+    VpsStorageTemporaryError,
 )
 from setting import APP_TIMEZONE_INFO
 
@@ -20,20 +21,20 @@ class ProcessNextTildaJob:
         self,
         repository: TildaJobRepository,
         file_downloader: FileDownloader,
-        google_drive_client: GoogleDriveClient,
+        file_storage: VpsFileStorage,
     ) -> None:
         self._repository = repository
         self._file_downloader = file_downloader
-        self._google_drive_client = google_drive_client
+        self._file_storage = file_storage
 
     def _is_retryable(self, exc: Exception) -> bool:
-        if isinstance(exc, (ValueError, GoogleDriveConfigurationError)):
+        if isinstance(exc, (ValueError, VpsStorageConfigurationError)):
             return False
 
         if isinstance(exc, HTTPError):
             return exc.code in {408, 429, 500, 502, 503, 504}
 
-        if isinstance(exc, (URLError, TimeoutError)):
+        if isinstance(exc, (URLError, TimeoutError, VpsStorageTemporaryError)):
             return True
 
         return False
@@ -60,7 +61,8 @@ class ProcessNextTildaJob:
 
         try:
             downloaded_file = await self._file_downloader.download(job.file_url)
-            upload_result = await self._google_drive_client.upload_file(
+            
+            upload_result = await self._file_storage.store_file(
                 file_path=downloaded_file.path,
                 file_name=downloaded_file.file_name,
                 content_type=downloaded_file.content_type,
@@ -77,7 +79,8 @@ class ProcessNextTildaJob:
                 message="Tilda job processed successfully",
                 tilda_job_id=job.tilda_job_id,
                 tran_id=job.tran_id,
-                google_drive_file_id=upload_result.file_id,
+                stored_file_path=upload_result.stored_file_path,
+                stored_file_url=upload_result.stored_file_url,
             )
         except Exception as exc:
             error_message = str(exc)

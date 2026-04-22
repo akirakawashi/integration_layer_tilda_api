@@ -25,7 +25,11 @@ class ProcessNextTildaJobResponse(BaseModel):
         default=None,
         description="Processed Tilda submission identifier"
     )
-    google_drive_file_id: str | None = Field(
+    stored_file_path: str | None = Field(
         default=None,
-        description="Uploaded Google Drive file identifier when available"
+        description="Remote VPS path of the uploaded file when available"
+    )
+    stored_file_url: str | None = Field(
+        default=None,
+        description="Public URL of the uploaded file when available"
     )

@@ -101,28 +101,48 @@ class KafkaConfig(BaseSettings):
         ]
 
 
-class GoogleDriveConfig(BaseSettings):
-    """Google Drive configuration settings"""
+class VpsStorageConfig(BaseSettings):
+    """Remote VPS file storage configuration settings"""
 
     model_config = SettingsConfigDict(
-        env_prefix="GOOGLE_DRIVE_",
+        env_prefix="VPS_STORAGE_",
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
     )
 
-    access_token: SecretStr = Field(
-        default=SecretStr(""),
-        description="OAuth access token used for Google Drive uploads"
+    host: str = Field(
+        default="",
+        description="SSH host for remote VPS storage"
     )
-    folder_id: str | None = Field(
+    port: int = Field(
+        default=22,
+        description="SSH port for remote VPS storage"
+    )
+    username: str = Field(
+        default="",
+        description="SSH username for remote VPS storage"
+    )
+    password: SecretStr = Field(
+        default=SecretStr(""),
+        description="Optional SSH password for remote VPS storage"
+    )
+    private_key_path: str | None = Field(
         default=None,
-        description="Optional Google Drive folder id for uploaded files"
+        description="Optional path to SSH private key used for remote VPS storage"
+    )
+    remote_dir: str = Field(
+        default="upload",
+        description="Remote directory on the VPS where files should be uploaded"
+    )
+    public_base_url: str | None = Field(
+        default=None,
+        description="Optional public base URL for uploaded files"
     )
     timeout_seconds: int = Field(
-        default=60,
-        description="Upload timeout for Google Drive requests"
+        default=30,
+        description="SSH upload timeout for remote VPS storage"
     )
 
 
@@ -162,5 +182,5 @@ class FileDownloaderConfig(BaseSettings):
 app_config = AppConfig()  
 database_config = DatabaseConfig()
 kafka_config = KafkaConfig()
-google_drive_config = GoogleDriveConfig()
+vps_storage_config = VpsStorageConfig()
 file_downloader_config = FileDownloaderConfig()
