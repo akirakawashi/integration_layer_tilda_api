@@ -1,7 +1,7 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import pool
+from sqlalchemy import pool, text
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from infrastructure.database.base import BaseModel
@@ -9,7 +9,7 @@ from infrastructure.database.models.tilda_job import TildaJob  # noqa: F401
 from infrastructure.database.models.tilda_job_status import TildaJobStatus  # noqa: F401
 from infrastructure.database.models.tilda_job_status_his import TildaJobStatusHistory  # noqa: F401
 from infrastructure.database.reference_data import sync_reference_data
-from setting.config import database_config
+from setting.config import app_config, database_config
 
 config = context.config
 
@@ -26,6 +26,14 @@ db_url = (
 config.set_main_option("sqlalchemy.url", db_url)
 
 
+def include_name(name, type_, parent_names):
+    if type_ == "schema":
+        return name == app_config.db_schema
+
+    schema_name = parent_names.get("schema_name")
+    return schema_name == app_config.db_schema
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
     url = config.get_main_option("sqlalchemy.url")
@@ -34,6 +42,9 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_schemas=True,
+        version_table_schema=app_config.db_schema,
+        include_name=include_name,
     )
 
     with context.begin_transaction():
@@ -41,9 +52,16 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection):
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_schemas=True,
+        version_table_schema=app_config.db_schema,
+        include_name=include_name,
+    )
 
     with context.begin_transaction():
+        connection.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{app_config.db_schema}"'))
         context.run_migrations()
         sync_reference_data(connection)
 
