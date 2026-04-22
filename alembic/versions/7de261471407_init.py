@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 205d1a614f25
+Revision ID: 7de261471407
 Revises: 
-Create Date: 2026-04-22 00:51:38.597777
+Create Date: 2026-04-22 07:08:07.395836
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '205d1a614f25'
+revision: str = '7de261471407'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -54,6 +54,7 @@ def upgrade() -> None:
     sa.Column('tilda_job_status_history_id', sa.Integer(), nullable=False),
     sa.Column('tilda_job_id', sa.Integer(), nullable=False),
     sa.Column('tilda_job_status_id', sa.Integer(), nullable=False),
+    sa.Column('error_message', sa.Text(), nullable=True),
     sa.Column('date_create', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['tilda_job_id'], ['tilda_job.tilda_job_id'], name=op.f('fk_tilda_job_status_history_tilda_job_id_tilda_job')),
     sa.ForeignKeyConstraint(['tilda_job_status_id'], ['tilda_job_status.tilda_job_status_id'], name=op.f('fk_tilda_job_status_history_tilda_job_status_id_tilda_job_status')),

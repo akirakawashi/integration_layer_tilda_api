@@ -8,6 +8,7 @@ from infrastructure.database.base import BaseModel
 from infrastructure.database.models.tilda_job import TildaJob  # noqa: F401
 from infrastructure.database.models.tilda_job_status import TildaJobStatus  # noqa: F401
 from infrastructure.database.models.tilda_job_status_his import TildaJobStatusHistory  # noqa: F401
+from infrastructure.database.reference_data import sync_reference_data
 from setting.config import database_config
 
 config = context.config
@@ -44,6 +45,7 @@ def do_run_migrations(connection):
 
     with context.begin_transaction():
         context.run_migrations()
+        sync_reference_data(connection)
 
 
 async def run_async_migrations() -> None:
