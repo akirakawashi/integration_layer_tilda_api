@@ -67,40 +67,6 @@ class DatabaseConfig(BaseSettings):
     max_overflow: int = Field(default=15, description="Maximum overflow size of the connection pool")
 
 
-class KafkaConfig(BaseSettings):
-    """Kafka configuration settings"""
-
-    model_config = SettingsConfigDict(
-        env_prefix="KAFKA_",
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore",
-    )
-
-    enabled: bool = Field(default=False, description="Enable Kafka integration")
-    bootstrap_servers: str = Field(
-        default="localhost:9094",
-        description="Comma-separated Kafka bootstrap servers"
-    )
-    client_id: str = Field(
-        default="tilda-api",
-        description="Kafka client id for this service"
-    )
-    tilda_job_created_topic: str = Field(
-        default="tilda.job.created",
-        description="Topic for created Tilda jobs"
-    )
-
-    @property
-    def bootstrap_servers_list(self) -> list[str]:
-        return [
-            server.strip()
-            for server in self.bootstrap_servers.split(",")
-            if server.strip()
-        ]
-
-
 class VpsStorageConfig(BaseSettings):
     """Remote VPS file storage configuration settings"""
 
@@ -222,7 +188,6 @@ class WorkerConfig(BaseSettings):
 
 app_config = AppConfig()  
 database_config = DatabaseConfig()
-kafka_config = KafkaConfig()
 vps_storage_config = VpsStorageConfig()
 file_downloader_config = FileDownloaderConfig()
 worker_config = WorkerConfig()

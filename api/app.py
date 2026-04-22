@@ -6,7 +6,6 @@ from setting import app_config
 from api.routers.v1.router import router as v1_router
 from api.routers.v1.shemas import HealthResponse
 from infrastructure.database.provider import DatabaseProvider
-from infrastructure.kafka.provider import KafkaProvider
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,12 +13,10 @@ async def lifespan(app: FastAPI):
     app.state.config = app_config
 
     await DatabaseProvider.init_engine()
-    await KafkaProvider.init_producer()
 
     try:
         yield
     finally:
-        await KafkaProvider.dispose_producer()
         await DatabaseProvider.dispose_engine()
 
 
