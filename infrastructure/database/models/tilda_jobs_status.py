@@ -5,13 +5,13 @@ from sqlmodel import Field, Relationship
 from infrastructure.database.base import BaseModel
 
 if TYPE_CHECKING:
-    from .tilda_job import TildaJob
+    from .tilda_jobs import TildaJob
 
 
 class TildaJobStatus(BaseModel, table=True):
-    __tablename__ = "tilda_job_status"
+    __tablename__ = "tilda_jobs_status"
 
-    tilda_job_status_id: int | None = Field(
+    tilda_jobs_status_id: int | None = Field(
         default=None, primary_key=True, description="Unique identifier for the Tilda job status"
     )
 

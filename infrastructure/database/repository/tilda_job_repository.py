@@ -16,7 +16,7 @@ class TildaJobRepository:
 
     @staticmethod
     def _require_job_id(job: TildaJob) -> int:
-        job_id = job.tilda_job_id
+        job_id = job.tilda_jobs_id
         if job_id is None:
             raise RuntimeError("Persisted Tilda job is missing primary key.")
 
@@ -35,8 +35,8 @@ class TildaJobRepository:
     ) -> None:
         self._session.add(
             TildaJobStatusHistory(
-                tilda_job_id=job_id,
-                tilda_job_status_id=status_id,
+                tilda_jobs_id=job_id,
+                tilda_jobs_status_id=status_id,
                 error_message=error_message,
             )
         )
@@ -55,14 +55,14 @@ class TildaJobRepository:
             select(TildaJob)
             .where(
                 or_(
-                    job_table.c.tilda_job_status_id == queued_status_id,
+                    job_table.c.tilda_jobs_status_id == queued_status_id,
                     and_(
-                        job_table.c.tilda_job_status_id == retry_wait_status_id,
+                        job_table.c.tilda_jobs_status_id == retry_wait_status_id,
                         job_table.c.next_retry_at.is_not(None),
                         job_table.c.next_retry_at <= func.now(),
                     ),
                     and_(
-                        job_table.c.tilda_job_status_id == processing_status_id,
+                        job_table.c.tilda_jobs_status_id == processing_status_id,
                         job_table.c.locked_until.is_not(None),
                         job_table.c.locked_until < func.now(),
                     ),
@@ -86,7 +86,7 @@ class TildaJobRepository:
             if job is None:
                 return None
 
-            job.tilda_job_status_id = processing_status_id
+            job.tilda_jobs_status_id = processing_status_id
             job.locked_by = locked_by
             job.locked_until = datetime.now(APP_TIMEZONE_INFO) + timedelta(seconds=lock_seconds)
             job.attempt_count += 1
@@ -118,7 +118,7 @@ class TildaJobRepository:
                     form_id=form_id,
                     file_url=file_url,
                     payload=payload,
-                    tilda_job_status_id=status_id,
+                    tilda_jobs_status_id=status_id,
                 )
                 .on_conflict_do_nothing(index_elements=[job_table.c.tran_id])
                 .returning(TildaJob)
@@ -155,7 +155,7 @@ class TildaJobRepository:
             if job is None:
                 raise TildaJobNotFoundError(job_id)
 
-            job.tilda_job_status_id = done_status_id
+            job.tilda_jobs_status_id = done_status_id
             job.locked_by = None
             job.locked_until = None
             job.next_retry_at = None
@@ -183,7 +183,7 @@ class TildaJobRepository:
             if job is None:
                 raise TildaJobNotFoundError(job_id)
 
-            job.tilda_job_status_id = retry_wait_status_id
+            job.tilda_jobs_status_id = retry_wait_status_id
             job.locked_by = None
             job.locked_until = None
             job.next_retry_at = retry_at
@@ -210,7 +210,7 @@ class TildaJobRepository:
             if job is None:
                 raise TildaJobNotFoundError(job_id)
 
-            job.tilda_job_status_id = failed_status_id
+            job.tilda_jobs_status_id = failed_status_id
             job.locked_by = None
             job.locked_until = None
             job.next_retry_at = None

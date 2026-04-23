@@ -50,12 +50,12 @@ class ProcessNextTildaJob:
 
         logger.info(
             "Tilda job claimed: tilda_job_id={}, tran_id={}, attempt_count={}, file_url={}",
-            job.tilda_job_id,
+            job.tilda_jobs_id,
             job.tran_id,
             job.attempt_count,
             job.file_url,
         )
-        job_id = job.tilda_job_id
+        job_id = job.tilda_jobs_id
         if job_id is None:
             raise RuntimeError("Claimed Tilda job is missing primary key.")
 
@@ -68,7 +68,7 @@ class ProcessNextTildaJob:
                     "Tilda job file downloaded: tilda_job_id={}, file_name={}, "
                     "content_type={}, size_bytes={}, path={}"
                 ),
-                job.tilda_job_id,
+                job.tilda_jobs_id,
                 downloaded_file.file_name,
                 downloaded_file.content_type,
                 downloaded_file.size_bytes,
@@ -87,7 +87,7 @@ class ProcessNextTildaJob:
                     "Tilda job file stored: tilda_job_id={}, stored_file_name={}, "
                     "stored_file_path={}, stored_file_url={}"
                 ),
-                job.tilda_job_id,
+                job.tilda_jobs_id,
                 upload_result.stored_file_name,
                 upload_result.stored_file_path,
                 upload_result.stored_file_url,
@@ -116,7 +116,7 @@ class ProcessNextTildaJob:
                     "Tilda job processing failed: tilda_job_id={}, tran_id={}, attempt_count={}, "
                     "max_attempts={}, error_type={}, error_message={}"
                 ),
-                job.tilda_job_id,
+                job.tilda_jobs_id,
                 job.tran_id,
                 job.attempt_count,
                 command.max_attempts,
@@ -128,7 +128,7 @@ class ProcessNextTildaJob:
                 retry_at = datetime.now(APP_TIMEZONE_INFO) + timedelta(seconds=command.retry_delay_seconds)
                 logger.info(
                     "Tilda job scheduled for retry: tilda_job_id={}, retry_at={}, retry_delay_seconds={}",
-                    job.tilda_job_id,
+                    job.tilda_jobs_id,
                     retry_at,
                     command.retry_delay_seconds,
                 )
@@ -149,7 +149,7 @@ class ProcessNextTildaJob:
 
             logger.info(
                 "Tilda job marked as failed: tilda_job_id={}, tran_id={}, attempt_count={}",
-                job.tilda_job_id,
+                job.tilda_jobs_id,
                 job.tran_id,
                 job.attempt_count,
             )
@@ -170,7 +170,7 @@ class ProcessNextTildaJob:
             if downloaded_file is not None:
                 logger.debug(
                     "Removing temporary downloaded file: tilda_job_id={}, path={}",
-                    job.tilda_job_id,
+                    job.tilda_jobs_id,
                     downloaded_file.path,
                 )
                 downloaded_file.path.unlink(missing_ok=True)

@@ -9,13 +9,13 @@ from infrastructure.database.base import BaseModel
 from setting.config import app_config
 
 if TYPE_CHECKING:
-    from .tilda_job_status import TildaJobStatus
+    from .tilda_jobs_status import TildaJobStatus
 
 
 class TildaJob(BaseModel, table=True):
-    __tablename__ = "tilda_job"
+    __tablename__ = "tilda_jobs"
 
-    tilda_job_id: int | None = Field(
+    tilda_jobs_id: int | None = Field(
         default=None, primary_key=True, description="Unique identifier for each Tilda job"
     )
 
@@ -31,8 +31,8 @@ class TildaJob(BaseModel, table=True):
 
     file_url: str = Field(nullable=False, description="Direct URL of the uploaded file received from Tilda")
 
-    tilda_job_status_id: int = Field(
-        foreign_key=f"{app_config.db_schema}.tilda_job_status.tilda_job_status_id",
+    tilda_jobs_status_id: int = Field(
+        foreign_key=f"{app_config.db_schema}.tilda_jobs_status.tilda_jobs_status_id",
         nullable=False,
         index=True,
         description="Reference to the current status of the job",

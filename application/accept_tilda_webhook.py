@@ -21,7 +21,7 @@ class AcceptTildaWebhook:
             payload=command.payload,
             status_id=TildaJobStatusId.QUEUED,
         )
-        job_id = job.tilda_job_id
+        job_id = job.tilda_jobs_id
         if job_id is None:
             raise RuntimeError("Persisted Tilda job is missing primary key.")
 

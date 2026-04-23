@@ -8,27 +8,27 @@ from infrastructure.database.base import BaseModel
 from setting.config import app_config
 
 if TYPE_CHECKING:
-    from .tilda_job import TildaJob
-    from .tilda_job_status import TildaJobStatus
+    from .tilda_jobs import TildaJob
+    from .tilda_jobs_status import TildaJobStatus
 
 
 class TildaJobStatusHistory(BaseModel, table=True):
-    __tablename__ = "tilda_job_status_history"
+    __tablename__ = "tilda_jobs_status_history"
 
-    tilda_job_status_history_id: int | None = Field(
+    tilda_jobs_status_history_id: int | None = Field(
         default=None,
         primary_key=True,
         description="Unique identifier for each Tilda job status history record",
     )
 
-    tilda_job_id: int = Field(
-        foreign_key=f"{app_config.db_schema}.tilda_job.tilda_job_id",
+    tilda_jobs_id: int = Field(
+        foreign_key=f"{app_config.db_schema}.tilda_jobs.tilda_jobs_id",
         nullable=False,
         description="Reference to the related Tilda job",
     )
 
-    tilda_job_status_id: int = Field(
-        foreign_key=f"{app_config.db_schema}.tilda_job_status.tilda_job_status_id",
+    tilda_jobs_status_id: int = Field(
+        foreign_key=f"{app_config.db_schema}.tilda_jobs_status.tilda_jobs_status_id",
         nullable=False,
         description="Reference to the job status at the moment of the change",
     )

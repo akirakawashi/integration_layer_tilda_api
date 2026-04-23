@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 from infrastructure.database.base import BaseModel
-from infrastructure.database.models.tilda_job import TildaJob  # noqa: F401
-from infrastructure.database.models.tilda_job_status import TildaJobStatus  # noqa: F401
-from infrastructure.database.models.tilda_job_status_his import TildaJobStatusHistory  # noqa: F401
+from infrastructure.database.models.tilda_jobs import TildaJob  # noqa: F401
+from infrastructure.database.models.tilda_jobs_status import TildaJobStatus  # noqa: F401
+from infrastructure.database.models.tilda_jobs_status_his import TildaJobStatusHistory  # noqa: F401
 from infrastructure.database.reference_data import sync_reference_data
 from setting.config import app_config, database_config
 
