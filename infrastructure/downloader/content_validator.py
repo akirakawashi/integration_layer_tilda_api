@@ -1,0 +1,64 @@
+import re
+from pathlib import Path
+
+from loguru import logger
+
+from exceptions import DownloadedFileContentMismatchError, DownloadedFileNotReadyError
+
+
+def validate_downloaded_content(
+    *,
+    file_path: Path,
+    file_name: str,
+    content_type: str | None,
+) -> None:
+    with file_path.open("rb") as file:
+        prefix = file.read(4096).lstrip()
+
+    lower_prefix = prefix.lower()
+    is_html = (
+        lower_prefix.startswith(b"<!doctype html")
+        or lower_prefix.startswith(b"<html")
+        or (content_type == "text/html" and b"<html" in lower_prefix)
+    )
+    if not is_html:
+        return
+
+    html_text = prefix.decode("utf-8", errors="ignore").lower()
+    logger.warning(
+        "Downloaded HTML instead of file: file_name={}, content_type={}, html_preview={}",
+        file_name,
+        content_type,
+        summarize_html(html_text),
+    )
+    raise_for_html_document(html_text=html_text, file_name=file_name)
+
+
+def raise_for_html_document(
+    *,
+    html_text: str,
+    file_name: str,
+) -> None:
+    if (
+        "tilda: go to storage" in html_text
+        or "has not been uploaded to the file storage service yet" in html_text
+        or "try in 5 minutes" in html_text
+    ):
+        logger.warning(
+            "Tilda storage reports file is not ready yet: file_name={}, html_preview={}",
+            file_name,
+            summarize_html(html_text),
+        )
+        raise DownloadedFileNotReadyError(file_name)
+
+    logger.warning(
+        "Remote server returned unexpected HTML page instead of file: file_name={}, html_preview={}",
+        file_name,
+        summarize_html(html_text),
+    )
+    raise DownloadedFileContentMismatchError(file_name)
+
+
+def summarize_html(html_text: str) -> str:
+    compact = re.sub(r"\s+", " ", html_text).strip()
+    return compact[:240]

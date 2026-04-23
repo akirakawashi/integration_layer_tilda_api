@@ -48,20 +48,23 @@ class ProcessNextTildaJob:
             )
 
         logger.info(
-            "Tilda job claimed: tilda_job_id={}, tran_id={}, file_url={}",
+            "Tilda job claimed: tilda_job_id={}, tran_id={}, attempt_count={}, file_url={}",
             job.tilda_job_id,
             job.tran_id,
+            job.attempt_count,
             job.file_url,
         )
+
         downloaded_file: DownloadedFile | None = None
 
         try:
             downloaded_file = await self._file_downloader.download(job.file_url)
             logger.info(
-                "Tilda job file downloaded: tilda_job_id={}, file_name={}, content_type={}, path={}",
+                "Tilda job file downloaded: tilda_job_id={}, file_name={}, content_type={}, size_bytes={}, path={}",
                 job.tilda_job_id,
                 downloaded_file.file_name,
                 downloaded_file.content_type,
+                downloaded_file.size_bytes,
                 downloaded_file.path,
             )
 
@@ -71,10 +74,11 @@ class ProcessNextTildaJob:
                 content_type=downloaded_file.content_type,
             )
             logger.info(
-                "Tilda job file stored: tilda_job_id={}, stored_file_name={}, stored_file_path={}",
+                "Tilda job file stored: tilda_job_id={}, stored_file_name={}, stored_file_path={}, stored_file_url={}",
                 job.tilda_job_id,
                 upload_result.stored_file_name,
                 upload_result.stored_file_path,
+                upload_result.stored_file_url,
             )
 
             await self._repository.mark_done(
@@ -95,16 +99,24 @@ class ProcessNextTildaJob:
             )
         except Exception as exc:
             error_message = get_processing_error_message(exc)
-            logger.warning(
-                "Tilda job processing failed: tilda_job_id={}, tran_id={}, error_type={}, error_message={}",
+            logger.opt(exception=exc).warning(
+                "Tilda job processing failed: tilda_job_id={}, tran_id={}, attempt_count={}, max_attempts={}, error_type={}, error_message={}",
                 job.tilda_job_id,
                 job.tran_id,
+                job.attempt_count,
+                command.max_attempts,
                 type(exc).__name__,
                 error_message,
             )
 
             if is_retryable_processing_error(exc) and job.attempt_count < command.max_attempts:
                 retry_at = datetime.now(APP_TIMEZONE_INFO) + timedelta(seconds=command.retry_delay_seconds)
+                logger.info(
+                    "Tilda job scheduled for retry: tilda_job_id={}, retry_at={}, retry_delay_seconds={}",
+                    job.tilda_job_id,
+                    retry_at,
+                    command.retry_delay_seconds,
+                )
                 await self._repository.mark_retry_wait(
                     job_id=job.tilda_job_id,
                     retry_wait_status_id=TildaJobStatusId.RETRY_WAIT,
@@ -120,6 +132,12 @@ class ProcessNextTildaJob:
                     tran_id=job.tran_id,
                 )
 
+            logger.info(
+                "Tilda job marked as failed: tilda_job_id={}, tran_id={}, attempt_count={}",
+                job.tilda_job_id,
+                job.tran_id,
+                job.attempt_count,
+            )
             await self._repository.mark_failed(
                 job_id=job.tilda_job_id,
                 failed_status_id=TildaJobStatusId.FAILED,
@@ -135,4 +153,9 @@ class ProcessNextTildaJob:
             )
         finally:
             if downloaded_file is not None:
+                logger.debug(
+                    "Removing temporary downloaded file: tilda_job_id={}, path={}",
+                    job.tilda_job_id,
+                    downloaded_file.path,
+                )
                 downloaded_file.path.unlink(missing_ok=True)
