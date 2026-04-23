@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 APP_TIMEZONE = "Europe/Moscow"
 APP_TIMEZONE_INFO = ZoneInfo(APP_TIMEZONE)
 
+
 class AppConfig(BaseSettings):
     """Application configuration settings"""
 
@@ -16,30 +17,13 @@ class AppConfig(BaseSettings):
         extra="ignore",
     )
 
-    name: str = Field(
-        default="API_tilda", 
-        description="The name of the application"
-        )
-    host: str = Field(
-        default="0.0.0.0",
-        description="The host address of the application"
-    )
-    port: int = Field(
-        default=8003,
-        description="The port number of the application"
-    )
-    debug: bool = Field(
-        default=False,
-        description="Enable debug mode"
-    )
-    api_prefix: str = Field(
-        default="/api/v1",
-        description="API prefix"
-    )
-    db_schema: str = Field(
-        default="integration_tilda",
-        description="Database schema used by this service"
-    )
+    name: str = Field(default="API_tilda", description="The name of the application")
+    host: str = Field(default="0.0.0.0", description="The host address of the application")
+    port: int = Field(default=8003, description="The port number of the application")
+    debug: bool = Field(default=False, description="Enable debug mode")
+    api_prefix: str = Field(default="/api/v1", description="API prefix")
+    db_schema: str = Field(default="integration_tilda", description="Database schema used by this service")
+
 
 class DatabaseConfig(BaseSettings):
     """Database configuration settings"""
@@ -60,7 +44,7 @@ class DatabaseConfig(BaseSettings):
 
     url: str = Field(
         default="postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}",
-        description="Asynchronous database URL"
+        description="Asynchronous database URL",
     )
     echo: bool = Field(default=True, description="Disable SQLAlchemy echo in production")
     pool_size: int = Field(default=5, description="Database connection pool size")
@@ -78,38 +62,22 @@ class VpsStorageConfig(BaseSettings):
         extra="ignore",
     )
 
-    host: str = Field(
-        default="",
-        description="SSH host for remote VPS storage"
-    )
-    port: int = Field(
-        default=22,
-        description="SSH port for remote VPS storage"
-    )
-    username: str = Field(
-        default="",
-        description="SSH username for remote VPS storage"
-    )
+    host: str = Field(default="", description="SSH host for remote VPS storage")
+    port: int = Field(default=22, description="SSH port for remote VPS storage")
+    username: str = Field(default="", description="SSH username for remote VPS storage")
     password: SecretStr = Field(
-        default=SecretStr(""),
-        description="Optional SSH password for remote VPS storage"
+        default=SecretStr(""), description="Optional SSH password for remote VPS storage"
     )
     private_key_path: str | None = Field(
-        default=None,
-        description="Optional path to SSH private key used for remote VPS storage"
+        default=None, description="Optional path to SSH private key used for remote VPS storage"
     )
     remote_dir: str = Field(
-        default="upload",
-        description="Remote directory on the VPS where files should be uploaded"
+        default="upload", description="Remote directory on the VPS where files should be uploaded"
     )
     public_base_url: str | None = Field(
-        default=None,
-        description="Optional public base URL for uploaded files"
+        default=None, description="Optional public base URL for uploaded files"
     )
-    timeout_seconds: int = Field(
-        default=30,
-        description="SSH upload timeout for remote VPS storage"
-    )
+    timeout_seconds: int = Field(default=30, description="SSH upload timeout for remote VPS storage")
 
 
 class FileDownloaderConfig(BaseSettings):
@@ -124,16 +92,12 @@ class FileDownloaderConfig(BaseSettings):
     )
 
     dir: str = Field(
-        default="storage/tilda_downloads",
-        description="Project-relative directory for downloaded Tilda files"
+        default="storage/tilda_downloads", description="Project-relative directory for downloaded Tilda files"
     )
-    max_size_mb: int = Field(
-        default=25,
-        description="Maximum allowed size for downloaded files in megabytes"
-    )
+    max_size_mb: int = Field(default=25, description="Maximum allowed size for downloaded files in megabytes")
     allowed_extensions: str = Field(
         default="pdf,doc,docx,xls,xlsx,csv,png,jpg,jpeg",
-        description="Comma-separated whitelist of allowed file extensions"
+        description="Comma-separated whitelist of allowed file extensions",
     )
 
     @property
@@ -156,37 +120,18 @@ class WorkerConfig(BaseSettings):
         extra="ignore",
     )
 
-    id: str = Field(
-        default="tilda-worker",
-        description="Stable identifier of the worker instance"
-    )
+    id: str = Field(default="tilda-worker", description="Stable identifier of the worker instance")
     poll_interval_seconds: int = Field(
-        default=5,
-        description="Delay before polling again when there are no ready jobs"
+        default=5, description="Delay before polling again when there are no ready jobs"
     )
-    error_backoff_seconds: int = Field(
-        default=10,
-        description="Delay after unexpected worker loop errors"
-    )
-    lock_seconds: int = Field(
-        default=300,
-        description="Lease duration for claimed jobs"
-    )
-    retry_delay_seconds: int = Field(
-        default=300,
-        description="Delay before retrying retryable job failures"
-    )
-    max_attempts: int = Field(
-        default=10,
-        description="Maximum processing attempts for one job"
-    )
-    shutdown_grace_seconds: int = Field(
-        default=30,
-        description="Maximum graceful shutdown wait time"
-    )
+    error_backoff_seconds: int = Field(default=10, description="Delay after unexpected worker loop errors")
+    lock_seconds: int = Field(default=300, description="Lease duration for claimed jobs")
+    retry_delay_seconds: int = Field(default=300, description="Delay before retrying retryable job failures")
+    max_attempts: int = Field(default=10, description="Maximum processing attempts for one job")
+    shutdown_grace_seconds: int = Field(default=30, description="Maximum graceful shutdown wait time")
 
 
-app_config = AppConfig()  
+app_config = AppConfig()
 database_config = DatabaseConfig()
 vps_storage_config = VpsStorageConfig()
 file_downloader_config = FileDownloaderConfig()

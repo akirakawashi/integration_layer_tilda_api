@@ -24,6 +24,7 @@ class TildaJobWorker:
         self._stop_event = stop_event or asyncio.Event()
         self._file_downloader = FileDownloader()
         self._file_storage = VpsFileStorage()
+
         self._command = ProcessNextTildaJobCommand(
             worker_id=worker_config.id,
             lock_seconds=worker_config.lock_seconds,
@@ -95,9 +96,7 @@ async def async_main() -> None:
                 timeout=worker_config.shutdown_grace_seconds,
             )
         except TimeoutError:
-            logger.warning(
-                "Timed out while disposing database engine during worker shutdown"
-            )
+            logger.warning("Timed out while disposing database engine during worker shutdown")
 
 
 def main() -> None:

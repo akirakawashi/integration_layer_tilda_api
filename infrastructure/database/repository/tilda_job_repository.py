@@ -68,9 +68,7 @@ class TildaJobRepository:
 
             job.tilda_job_status_id = processing_status_id
             job.locked_by = locked_by
-            job.locked_until = datetime.now(APP_TIMEZONE_INFO) + timedelta(
-                seconds=lock_seconds
-            )
+            job.locked_until = datetime.now(APP_TIMEZONE_INFO) + timedelta(seconds=lock_seconds)
             job.attempt_count += 1
             job.last_error_message = None
             job.next_retry_at = None
@@ -117,9 +115,7 @@ class TildaJobRepository:
             existing_result = await self._session.execute(existing_statement)
             existing_job = existing_result.scalar_one_or_none()
             if existing_job is None:
-                raise RuntimeError(
-                    f"Tilda job with tran_id={tran_id} was not found after conflict"
-                )
+                raise RuntimeError(f"Tilda job with tran_id={tran_id} was not found after conflict")
 
             return existing_job, True
 
@@ -128,6 +124,7 @@ class TildaJobRepository:
         *,
         job_id: int,
         done_status_id: int,
+        stored_file_name: str,
     ) -> TildaJob:
         async with self._session.begin():
             job = await self._session.get(TildaJob, job_id)
@@ -140,6 +137,7 @@ class TildaJobRepository:
             job.locked_until = None
             job.next_retry_at = None
             job.last_error_message = None
+            job.stored_file_name = stored_file_name
             self._add_status_history(
                 job_id=job.tilda_job_id,
                 status_id=done_status_id,
