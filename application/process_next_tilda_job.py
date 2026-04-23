@@ -62,7 +62,7 @@ class ProcessNextTildaJob:
 
         try:
             downloaded_file = await self._file_downloader.download(job.file_url)
-            
+
             upload_result = await self._file_storage.store_file(
                 file_path=downloaded_file.path,
                 file_name=downloaded_file.file_name,
@@ -72,6 +72,7 @@ class ProcessNextTildaJob:
             await self._repository.mark_done(
                 job_id=job.tilda_job_id,
                 done_status_id=TildaJobStatusId.DONE,
+                stored_file_name=upload_result.stored_file_name,
             )
 
             return ProcessNextTildaJobResult(
@@ -80,6 +81,7 @@ class ProcessNextTildaJob:
                 message="Tilda job processed successfully",
                 tilda_job_id=job.tilda_job_id,
                 tran_id=job.tran_id,
+                stored_file_name=upload_result.stored_file_name,
                 stored_file_path=upload_result.stored_file_path,
                 stored_file_url=upload_result.stored_file_url,
             )
@@ -87,9 +89,7 @@ class ProcessNextTildaJob:
             error_message = str(exc)
 
             if self._is_retryable(exc) and job.attempt_count < command.max_attempts:
-                retry_at = datetime.now(APP_TIMEZONE_INFO) + timedelta(
-                    seconds=command.retry_delay_seconds
-                )
+                retry_at = datetime.now(APP_TIMEZONE_INFO) + timedelta(seconds=command.retry_delay_seconds)
                 await self._repository.mark_retry_wait(
                     job_id=job.tilda_job_id,
                     retry_wait_status_id=TildaJobStatusId.RETRY_WAIT,

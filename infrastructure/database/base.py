@@ -12,6 +12,7 @@ convention = {
     "pk": "pk_%(table_name)s",
 }
 
+
 class BaseModel(SQLModel):
     metadata = MetaData(
         schema=app_config.db_schema,

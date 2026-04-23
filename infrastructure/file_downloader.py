@@ -66,8 +66,7 @@ class FileDownloader:
                     and int(content_length) > self._max_size_bytes
                 ):
                     raise ValueError(
-                        "File is too large. "
-                        f"Maximum allowed size is {file_downloader_config.max_size_mb} MB"
+                        f"File is too large. Maximum allowed size is {file_downloader_config.max_size_mb} MB"
                     )
 
                 with temp_file:
@@ -95,7 +94,7 @@ class FileDownloader:
                 content_type=content_type,
                 size_bytes=size_bytes,
             )
-            
+
         except Exception:
             if temp_path is not None:
                 temp_path.unlink(missing_ok=True)

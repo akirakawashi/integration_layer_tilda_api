@@ -52,16 +52,12 @@ class VpsFileStorage:
         if not self._username:
             raise VpsStorageConfigurationError("VPS storage username is not configured")
         if not self._password and not self._private_key_path:
-            raise VpsStorageConfigurationError(
-                "VPS storage password or private key path is not configured"
-            )
+            raise VpsStorageConfigurationError("VPS storage password or private key path is not configured")
 
         try:
             import paramiko
         except ImportError as exc:
-            raise VpsStorageConfigurationError(
-                "paramiko is not installed; run poetry install"
-            ) from exc
+            raise VpsStorageConfigurationError("paramiko is not installed; run poetry install") from exc
 
         if self._private_key_path and not Path(self._private_key_path).exists():
             raise VpsStorageConfigurationError(
@@ -98,17 +94,14 @@ class VpsFileStorage:
             finally:
                 sftp_client.close()
         except paramiko.AuthenticationException as exc:
-            raise VpsStorageConfigurationError(
-                "VPS storage authentication failed"
-            ) from exc
+            raise VpsStorageConfigurationError("VPS storage authentication failed") from exc
         except (paramiko.SSHException, socket.timeout, OSError) as exc:
-            raise VpsStorageTemporaryError(
-                f"VPS storage upload failed: {exc}"
-            ) from exc
+            raise VpsStorageTemporaryError(f"VPS storage upload failed: {exc}") from exc
         finally:
             ssh_client.close()
 
         return StoredFileResult(
+            stored_file_name=remote_file_name,
             stored_file_path=remote_file_path,
             stored_file_url=self._build_public_url(remote_file_path),
         )
@@ -140,7 +133,4 @@ class VpsFileStorage:
             return None
 
         relative_path = remote_file_path.lstrip("/")
-        return (
-            f"{self._public_base_url.rstrip('/')}/"
-            f"{quote(relative_path, safe='/')}"
-        )
+        return f"{self._public_base_url.rstrip('/')}/{quote(relative_path, safe='/')}"
