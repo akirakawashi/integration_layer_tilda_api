@@ -9,6 +9,11 @@ def build_stored_file_name(file_name: str) -> str:
     return f"{uuid.uuid4().hex}{suffix}"
 
 
+def build_job_stored_file_name(job_id: int, file_name: str) -> str:
+    suffix = Path(file_name).suffix.lower()
+    return f"tilda_job_{job_id}{suffix}"
+
+
 def normalize_remote_dir(remote_dir: str) -> str:
     normalized = posixpath.normpath(remote_dir.strip("/"))
     return "" if normalized == "." else normalized

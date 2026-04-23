@@ -3,6 +3,7 @@ from urllib.error import HTTPError, URLError
 from exceptions import (
     DownloadedFileContentMismatchError,
     DownloadedFileNotReadyError,
+    DownloadedFileSignatureMismatchError,
     EmptyDownloadedFileError,
     FileTooLargeError,
     NextcloudAppPasswordNotConfiguredError,
@@ -21,6 +22,7 @@ NON_RETRYABLE_EXCEPTIONS = (
     FileTooLargeError,
     EmptyDownloadedFileError,
     DownloadedFileContentMismatchError,
+    DownloadedFileSignatureMismatchError,
     NextcloudBaseUrlNotConfiguredError,
     NextcloudUsernameNotConfiguredError,
     NextcloudAppPasswordNotConfiguredError,

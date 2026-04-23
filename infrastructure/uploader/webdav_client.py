@@ -77,7 +77,10 @@ def ensure_remote_dir(
             raise NextcloudDirectoryCreateFailedError(exc.code) from exc
         except (TimeoutError, URLError, OSError) as exc:
             logger.warning(
-                "Nextcloud directory creation failed with transport error: directory={}, error_type={}, error_message={}",
+                (
+                    "Nextcloud directory creation failed with transport error: "
+                    "directory={}, error_type={}, error_message={}"
+                ),
                 directory_path,
                 type(exc).__name__,
                 str(exc),
@@ -136,7 +139,10 @@ def upload_file(
         raise NextcloudUploadFailedError(exc.code) from exc
     except (TimeoutError, URLError, OSError) as exc:
         logger.warning(
-            "Nextcloud upload failed with transport error: remote_file_path={}, error_type={}, error_message={}",
+            (
+                "Nextcloud upload failed with transport error: "
+                "remote_file_path={}, error_type={}, error_message={}"
+            ),
             remote_file_path,
             type(exc).__name__,
             str(exc),

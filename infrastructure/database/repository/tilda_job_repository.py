@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
+from typing import cast
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import Table, and_, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,6 +13,18 @@ from setting import APP_TIMEZONE_INFO
 class TildaJobRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    @staticmethod
+    def _require_job_id(job: TildaJob) -> int:
+        job_id = job.tilda_job_id
+        if job_id is None:
+            raise RuntimeError("Persisted Tilda job is missing primary key.")
+
+        return job_id
+
+    @staticmethod
+    def _job_table() -> Table:
+        return cast(Table, getattr(TildaJob, "__table__"))
 
     def _add_status_history(
         self,
@@ -37,30 +50,31 @@ class TildaJobRepository:
         locked_by: str,
         lock_seconds: int,
     ) -> TildaJob | None:
+        job_table = self._job_table()
         statement = (
             select(TildaJob)
             .where(
                 or_(
-                    TildaJob.tilda_job_status_id == queued_status_id,
+                    job_table.c.tilda_job_status_id == queued_status_id,
                     and_(
-                        TildaJob.tilda_job_status_id == retry_wait_status_id,
-                        TildaJob.next_retry_at.is_not(None),
-                        TildaJob.next_retry_at <= func.now(),
+                        job_table.c.tilda_job_status_id == retry_wait_status_id,
+                        job_table.c.next_retry_at.is_not(None),
+                        job_table.c.next_retry_at <= func.now(),
                     ),
                     and_(
-                        TildaJob.tilda_job_status_id == processing_status_id,
-                        TildaJob.locked_until.is_not(None),
-                        TildaJob.locked_until < func.now(),
+                        job_table.c.tilda_job_status_id == processing_status_id,
+                        job_table.c.locked_until.is_not(None),
+                        job_table.c.locked_until < func.now(),
                     ),
                 )
             )
             .where(
                 or_(
-                    TildaJob.locked_until.is_(None),
-                    TildaJob.locked_until < func.now(),
+                    job_table.c.locked_until.is_(None),
+                    job_table.c.locked_until < func.now(),
                 )
             )
-            .order_by(func.coalesce(TildaJob.next_retry_at, TildaJob.date_create))
+            .order_by(func.coalesce(job_table.c.next_retry_at, job_table.c.date_create))
             .limit(1)
             .with_for_update(skip_locked=True)
         )
@@ -78,8 +92,9 @@ class TildaJobRepository:
             job.attempt_count += 1
             job.last_error_message = None
             job.next_retry_at = None
+            job_id = self._require_job_id(job)
             self._add_status_history(
-                job_id=job.tilda_job_id,
+                job_id=job_id,
                 status_id=processing_status_id,
             )
 
@@ -94,6 +109,7 @@ class TildaJobRepository:
         payload: dict[str, str],
         status_id: int,
     ) -> tuple[TildaJob, bool]:
+        job_table = self._job_table()
         async with self._session.begin():
             statement = (
                 insert(TildaJob)
@@ -104,20 +120,21 @@ class TildaJobRepository:
                     payload=payload,
                     tilda_job_status_id=status_id,
                 )
-                .on_conflict_do_nothing(index_elements=[TildaJob.tran_id])
+                .on_conflict_do_nothing(index_elements=[job_table.c.tran_id])
                 .returning(TildaJob)
             )
             result = await self._session.execute(statement)
             job = result.scalar_one_or_none()
 
             if job is not None:
+                job_id = self._require_job_id(job)
                 self._add_status_history(
-                    job_id=job.tilda_job_id,
+                    job_id=job_id,
                     status_id=status_id,
                 )
                 return job, False
 
-            existing_statement = select(TildaJob).where(TildaJob.tran_id == tran_id)
+            existing_statement = select(TildaJob).where(job_table.c.tran_id == tran_id)
             existing_result = await self._session.execute(existing_statement)
             existing_job = existing_result.scalar_one_or_none()
             if existing_job is None:
@@ -144,8 +161,9 @@ class TildaJobRepository:
             job.next_retry_at = None
             job.last_error_message = None
             job.stored_file_name = stored_file_name
+            persisted_job_id = self._require_job_id(job)
             self._add_status_history(
-                job_id=job.tilda_job_id,
+                job_id=persisted_job_id,
                 status_id=done_status_id,
             )
 
@@ -170,8 +188,9 @@ class TildaJobRepository:
             job.locked_until = None
             job.next_retry_at = retry_at
             job.last_error_message = error_message
+            persisted_job_id = self._require_job_id(job)
             self._add_status_history(
-                job_id=job.tilda_job_id,
+                job_id=persisted_job_id,
                 status_id=retry_wait_status_id,
                 error_message=error_message,
             )
@@ -196,8 +215,9 @@ class TildaJobRepository:
             job.locked_until = None
             job.next_retry_at = None
             job.last_error_message = error_message
+            persisted_job_id = self._require_job_id(job)
             self._add_status_history(
-                job_id=job.tilda_job_id,
+                job_id=persisted_job_id,
                 status_id=failed_status_id,
                 error_message=error_message,
             )

@@ -21,15 +21,18 @@ class AcceptTildaWebhook:
             payload=command.payload,
             status_id=TildaJobStatusId.QUEUED,
         )
+        job_id = job.tilda_job_id
+        if job_id is None:
+            raise RuntimeError("Persisted Tilda job is missing primary key.")
 
         if duplicate:
             return AcceptTildaWebhookResult(
-                tilda_job_id=job.tilda_job_id,
+                tilda_job_id=job_id,
                 tran_id=job.tran_id,
                 duplicate=True,
             )
 
         return AcceptTildaWebhookResult(
-            tilda_job_id=job.tilda_job_id,
+            tilda_job_id=job_id,
             tran_id=job.tran_id,
         )

@@ -1,7 +1,6 @@
 import re
 from urllib.parse import urlparse
 
-
 GOOGLE_DRIVE_HOSTS = {"drive.google.com", "www.drive.google.com"}
 
 

@@ -46,6 +46,9 @@ async def accept_tilda_webhook(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Отсутствуют обязательные поля Tilda: {', '.join(missing_fields)}",
         )
+    assert tran_id is not None
+    assert form_id is not None
+    assert file_url is not None
 
     use_case = AcceptTildaWebhook(
         repository=TildaJobRepository(session=session),

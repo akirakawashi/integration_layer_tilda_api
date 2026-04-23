@@ -15,6 +15,7 @@ from infrastructure.database.repository.tilda_job_repository import TildaJobRepo
 from infrastructure.dto import DownloadedFile
 from infrastructure.file_downloader import FileDownloader
 from infrastructure.nextcloud_file_storage import NextcloudFileStorage
+from infrastructure.uploader.path_utils import build_job_stored_file_name
 from setting import APP_TIMEZONE_INFO
 
 
@@ -54,27 +55,38 @@ class ProcessNextTildaJob:
             job.attempt_count,
             job.file_url,
         )
+        job_id = job.tilda_job_id
+        if job_id is None:
+            raise RuntimeError("Claimed Tilda job is missing primary key.")
 
         downloaded_file: DownloadedFile | None = None
 
         try:
             downloaded_file = await self._file_downloader.download(job.file_url)
             logger.info(
-                "Tilda job file downloaded: tilda_job_id={}, file_name={}, content_type={}, size_bytes={}, path={}",
+                (
+                    "Tilda job file downloaded: tilda_job_id={}, file_name={}, "
+                    "content_type={}, size_bytes={}, path={}"
+                ),
                 job.tilda_job_id,
                 downloaded_file.file_name,
                 downloaded_file.content_type,
                 downloaded_file.size_bytes,
                 downloaded_file.path,
             )
+            stored_file_name = build_job_stored_file_name(job_id, downloaded_file.file_name)
 
             upload_result = await self._file_storage.store_file(
                 file_path=downloaded_file.path,
                 file_name=downloaded_file.file_name,
+                stored_file_name=stored_file_name,
                 content_type=downloaded_file.content_type,
             )
             logger.info(
-                "Tilda job file stored: tilda_job_id={}, stored_file_name={}, stored_file_path={}, stored_file_url={}",
+                (
+                    "Tilda job file stored: tilda_job_id={}, stored_file_name={}, "
+                    "stored_file_path={}, stored_file_url={}"
+                ),
                 job.tilda_job_id,
                 upload_result.stored_file_name,
                 upload_result.stored_file_path,
@@ -82,7 +94,7 @@ class ProcessNextTildaJob:
             )
 
             await self._repository.mark_done(
-                job_id=job.tilda_job_id,
+                job_id=job_id,
                 done_status_id=TildaJobStatusId.DONE,
                 stored_file_name=upload_result.stored_file_name,
             )
@@ -91,7 +103,7 @@ class ProcessNextTildaJob:
                 processed=True,
                 status="done",
                 message="Tilda job processed successfully",
-                tilda_job_id=job.tilda_job_id,
+                tilda_job_id=job_id,
                 tran_id=job.tran_id,
                 stored_file_name=upload_result.stored_file_name,
                 stored_file_path=upload_result.stored_file_path,
@@ -100,7 +112,10 @@ class ProcessNextTildaJob:
         except Exception as exc:
             error_message = get_processing_error_message(exc)
             logger.opt(exception=exc).warning(
-                "Tilda job processing failed: tilda_job_id={}, tran_id={}, attempt_count={}, max_attempts={}, error_type={}, error_message={}",
+                (
+                    "Tilda job processing failed: tilda_job_id={}, tran_id={}, attempt_count={}, "
+                    "max_attempts={}, error_type={}, error_message={}"
+                ),
                 job.tilda_job_id,
                 job.tran_id,
                 job.attempt_count,
@@ -118,7 +133,7 @@ class ProcessNextTildaJob:
                     command.retry_delay_seconds,
                 )
                 await self._repository.mark_retry_wait(
-                    job_id=job.tilda_job_id,
+                    job_id=job_id,
                     retry_wait_status_id=TildaJobStatusId.RETRY_WAIT,
                     error_message=error_message,
                     retry_at=retry_at,
@@ -128,7 +143,7 @@ class ProcessNextTildaJob:
                     processed=True,
                     status="retry_wait",
                     message=error_message,
-                    tilda_job_id=job.tilda_job_id,
+                    tilda_job_id=job_id,
                     tran_id=job.tran_id,
                 )
 
@@ -139,7 +154,7 @@ class ProcessNextTildaJob:
                 job.attempt_count,
             )
             await self._repository.mark_failed(
-                job_id=job.tilda_job_id,
+                job_id=job_id,
                 failed_status_id=TildaJobStatusId.FAILED,
                 error_message=error_message,
             )
@@ -148,7 +163,7 @@ class ProcessNextTildaJob:
                 processed=True,
                 status="failed",
                 message=error_message,
-                tilda_job_id=job.tilda_job_id,
+                tilda_job_id=job_id,
                 tran_id=job.tran_id,
             )
         finally:

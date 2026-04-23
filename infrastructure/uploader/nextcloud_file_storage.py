@@ -34,12 +34,14 @@ class NextcloudFileStorage:
         *,
         file_path: Path,
         file_name: str,
+        stored_file_name: str | None = None,
         content_type: str | None = None,
     ) -> StoredFileResult:
         return await asyncio.to_thread(
             self._store_file_sync,
             file_path,
             file_name,
+            stored_file_name,
             content_type,
         )
 
@@ -47,15 +49,21 @@ class NextcloudFileStorage:
         self,
         file_path: Path,
         file_name: str,
+        stored_file_name: str | None,
         content_type: str | None,
     ) -> StoredFileResult:
         self._validate_config()
 
-        stored_file_name = build_stored_file_name(file_name)
+        if stored_file_name is None:
+            stored_file_name = build_stored_file_name(file_name)
         remote_dir = normalize_remote_dir(self._remote_dir)
         remote_file_path = posixpath.join(remote_dir, stored_file_name) if remote_dir else stored_file_name
         logger.info(
-            "Uploading file to Nextcloud: base_url={}, username={}, dav_user_id={}, remote_dir={}, source_file_name={}, stored_file_name={}, content_type={}, size_bytes={}",
+            (
+                "Uploading file to Nextcloud: base_url={}, username={}, dav_user_id={}, "
+                "remote_dir={}, source_file_name={}, stored_file_name={}, "
+                "content_type={}, size_bytes={}"
+            ),
             self._base_url,
             self._username,
             self._dav_user_id,

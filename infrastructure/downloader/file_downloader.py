@@ -52,7 +52,10 @@ class FileDownloader:
                 content_type = response.headers.get_content_type()
                 content_length = response.headers.get("Content-Length")
                 logger.info(
-                    "File download response received: original_url={}, resolved_url={}, final_url={}, content_type={}, content_length={}",
+                    (
+                        "File download response received: original_url={}, resolved_url={}, "
+                        "final_url={}, content_type={}, content_length={}"
+                    ),
                     file_url,
                     resolved_url,
                     final_url,
@@ -68,7 +71,10 @@ class FileDownloader:
                 extension = suffix.lower().lstrip(".")
                 if extension not in self._allowed_extensions:
                     logger.warning(
-                        "Downloaded file has unsupported extension: file_name={}, extension={}, allowed_extensions={}",
+                        (
+                            "Downloaded file has unsupported extension: file_name={}, "
+                            "extension={}, allowed_extensions={}"
+                        ),
                         file_name,
                         extension,
                         sorted(self._allowed_extensions),
@@ -89,7 +95,10 @@ class FileDownloader:
                     and int(content_length) > self._max_size_bytes
                 ):
                     logger.warning(
-                        "Downloaded file exceeds declared size limit: file_name={}, declared_size_bytes={}, max_size_bytes={}",
+                        (
+                            "Downloaded file exceeds declared size limit: file_name={}, "
+                            "declared_size_bytes={}, max_size_bytes={}"
+                        ),
                         file_name,
                         content_length,
                         self._max_size_bytes,
@@ -106,7 +115,10 @@ class FileDownloader:
                         size_bytes += len(chunk)
                         if size_bytes > self._max_size_bytes:
                             logger.warning(
-                                "Downloaded file exceeded size limit while streaming: file_name={}, current_size_bytes={}, max_size_bytes={}",
+                                (
+                                    "Downloaded file exceeded size limit while streaming: "
+                                    "file_name={}, current_size_bytes={}, max_size_bytes={}"
+                                ),
                                 file_name,
                                 size_bytes,
                                 self._max_size_bytes,

@@ -5,6 +5,7 @@ from exceptions.database import (
 from exceptions.file import (
     DownloadedFileContentMismatchError,
     DownloadedFileNotReadyError,
+    DownloadedFileSignatureMismatchError,
     EmptyDownloadedFileError,
     FileTooLargeError,
     UnsupportedFileFormatError,
@@ -27,6 +28,7 @@ __all__ = [
     "DatabaseEngineNotInitializedError",
     "DownloadedFileContentMismatchError",
     "DownloadedFileNotReadyError",
+    "DownloadedFileSignatureMismatchError",
     "EmptyDownloadedFileError",
     "FileTooLargeError",
     "NextcloudAppPasswordNotConfiguredError",

@@ -3,7 +3,6 @@ from html import unescape
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-
 TUPWIDGET_HOSTS = {"tupwidget.com", "www.tupwidget.com"}
 
 
