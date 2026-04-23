@@ -18,34 +18,30 @@ class TildaJobStatusHistory(BaseModel, table=True):
     tilda_job_status_history_id: int | None = Field(
         default=None,
         primary_key=True,
-        description="Unique identifier for each Tilda job status history record"
+        description="Unique identifier for each Tilda job status history record",
     )
 
     tilda_job_id: int = Field(
         foreign_key=f"{app_config.db_schema}.tilda_job.tilda_job_id",
         nullable=False,
-        description="Reference to the related Tilda job"
+        description="Reference to the related Tilda job",
     )
 
     tilda_job_status_id: int = Field(
         foreign_key=f"{app_config.db_schema}.tilda_job_status.tilda_job_status_id",
         nullable=False,
-        description="Reference to the job status at the moment of the change"
+        description="Reference to the job status at the moment of the change",
     )
 
     error_message: str | None = Field(
         default=None,
         sa_column=Column(Text, nullable=True),
-        description="Optional human-readable error for this status transition"
+        description="Optional human-readable error for this status transition",
     )
 
     date_create: datetime = Field(
-        sa_column=Column(
-            DateTime(timezone=True),
-            server_default=func.now(),
-            nullable=False
-        ),
-        description="Timestamp when the status history record was created"
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
+        description="Timestamp when the status history record was created",
     )
 
     job: "TildaJob" = Relationship()

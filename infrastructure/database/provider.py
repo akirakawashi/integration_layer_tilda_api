@@ -6,8 +6,8 @@ from loguru import logger
 
 from setting.config import database_config
 
-class DatabaseProvider:
 
+class DatabaseProvider:
     _engine: AsyncEngine | None = None
     _session_maker: async_sessionmaker[AsyncSession] | None = None
 
@@ -26,11 +26,7 @@ class DatabaseProvider:
                 max_overflow=database_config.max_overflow,
                 pool_pre_ping=True,
             )
-            cls._session_maker = async_sessionmaker(
-                cls._engine,
-                expire_on_commit=False,
-                class_=AsyncSession
-            )
+            cls._session_maker = async_sessionmaker(cls._engine, expire_on_commit=False, class_=AsyncSession)
 
         if cls._session_maker is None:
             raise RuntimeError("Session maker is not initialized")
@@ -48,7 +44,7 @@ class DatabaseProvider:
         """Provide a database session with proper lifecycle management"""
         if cls._session_maker is None:
             await cls.init_engine()
-        
+
         if cls._session_maker is None:
             raise RuntimeError("Database engine is not initialized")
 
