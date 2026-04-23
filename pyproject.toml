@@ -36,3 +36,6 @@ select = ["E", "F", "I"]
 dev = [
     "ruff (>=0.15.11,<0.16.0)"
 ]
+[tool.mypy]
+exclude = "^alembic/versions/"
+
