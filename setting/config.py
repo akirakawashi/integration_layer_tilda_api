@@ -43,13 +43,16 @@ class DatabaseConfig(BaseSettings):
     password: SecretStr = Field(default=SecretStr("tilda_api"), description="Database password")
     database: str = Field(default="tilda_api", description="Database name")
 
-    url: str = Field(
-        default="postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}",
-        description="Asynchronous database URL",
-    )
     echo: bool = Field(default=True, description="Disable SQLAlchemy echo in production")
     pool_size: int = Field(default=5, description="Database connection pool size")
     max_overflow: int = Field(default=15, description="Maximum overflow size of the connection pool")
+
+    @property
+    def url(self) -> str:
+        return (
+            f"postgresql+asyncpg://{self.user}:{self.password.get_secret_value()}@"
+            f"{self.host}:{self.port}/{self.database}"
+        )
 
 
 class NextcloudStorageConfig(BaseSettings):
@@ -93,7 +96,7 @@ class FileDownloaderConfig(BaseSettings):
     )
     max_size_mb: int = Field(default=25, description="Maximum allowed size for downloaded files in megabytes")
     allowed_extensions: str = Field(
-        default="pdf,doc,docx,xls,xlsx,csv,png,jpg,jpeg",
+        default="zip,rar",
         description="Comma-separated whitelist of allowed file extensions",
     )
 

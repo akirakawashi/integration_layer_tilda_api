@@ -17,13 +17,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = BaseModel.metadata
-
-db_url = (
-    f"postgresql+asyncpg://{database_config.user}:"
-    f"{database_config.password.get_secret_value()}@"
-    f"{database_config.host}:{database_config.port}/{database_config.database}"
-)
-config.set_main_option("sqlalchemy.url", db_url)
+config.set_main_option("sqlalchemy.url", database_config.url)
 
 
 def include_name(name, type_, parent_names):
