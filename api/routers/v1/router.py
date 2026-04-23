@@ -23,8 +23,7 @@ router = APIRouter(tags=["tilda"])
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def accept_tilda_webhook(
-    request: Request,
-    session: AsyncSession = Depends(DatabaseProvider.get_session)
+    request: Request, session: AsyncSession = Depends(DatabaseProvider.get_session)
 ) -> TildaWebhookAcceptedResponse:
     payload_bytes = await request.body()
     payload = dict(parse_qsl(payload_bytes.decode("utf-8"), keep_blank_values=True))

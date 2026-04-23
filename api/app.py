@@ -7,6 +7,7 @@ from api.routers.v1.router import router as v1_router
 from api.routers.v1.shemas import HealthResponse
 from infrastructure.database.provider import DatabaseProvider
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan event handler for the FastAPI application"""
@@ -22,11 +23,7 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application"""
-    app = FastAPI(
-        title=app_config.name,
-        debug=app_config.debug,
-        lifespan=lifespan
-    )
+    app = FastAPI(title=app_config.name, debug=app_config.debug, lifespan=lifespan)
     app.include_router(v1_router, prefix=app_config.api_prefix)
 
     @app.get("/health", response_model=HealthResponse, tags=["health"])
@@ -35,14 +32,13 @@ def create_app() -> FastAPI:
 
     return app
 
+
 app = create_app()
 
+
 def main() -> None:
-    uvicorn.run(
-        "api.app:app",
-        host=app_config.host,
-        port=app_config.port
-    )
+    uvicorn.run("api.app:app", host=app_config.host, port=app_config.port)
+
 
 if __name__ == "__main__":
     main()
