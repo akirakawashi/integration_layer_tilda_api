@@ -1,6 +1,7 @@
+from zoneinfo import ZoneInfo
+
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from zoneinfo import ZoneInfo
 
 APP_TIMEZONE = "Europe/Moscow"
 APP_TIMEZONE_INFO = ZoneInfo(APP_TIMEZONE)

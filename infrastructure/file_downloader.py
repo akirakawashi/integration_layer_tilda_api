@@ -7,7 +7,6 @@ from urllib.request import Request, urlopen
 from infrastructure.dto import DownloadedFile
 from setting import file_downloader_config
 
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 

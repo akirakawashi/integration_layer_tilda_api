@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, List
+
 from sqlmodel import Field, Relationship
 
 from infrastructure.database.base import BaseModel

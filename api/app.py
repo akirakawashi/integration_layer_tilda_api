@@ -1,11 +1,12 @@
-import uvicorn
-from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from setting import app_config
+import uvicorn
+from fastapi import FastAPI
+
 from api.routers.v1.router import router as v1_router
 from api.routers.v1.shemas import HealthResponse
 from infrastructure.database.provider import DatabaseProvider
+from setting import app_config
 
 
 @asynccontextmanager

@@ -1,9 +1,9 @@
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool, text
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+from alembic import context
 from infrastructure.database.base import BaseModel
 from infrastructure.database.models.tilda_job import TildaJob  # noqa: F401
 from infrastructure.database.models.tilda_job_status import TildaJobStatus  # noqa: F401
