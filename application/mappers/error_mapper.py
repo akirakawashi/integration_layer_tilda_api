@@ -1,15 +1,16 @@
 from urllib.error import HTTPError, URLError
 
 from exceptions import (
+    DownloadedFileContentMismatchError,
+    DownloadedFileNotReadyError,
     EmptyDownloadedFileError,
     FileTooLargeError,
-    StorageAuthenticationFailedError,
-    StorageCredentialsNotConfiguredError,
-    StorageHostNotConfiguredError,
-    StorageLibraryNotInstalledError,
-    StoragePrivateKeyNotFoundError,
-    StorageUploadFailedError,
-    StorageUsernameNotConfiguredError,
+    NextcloudAppPasswordNotConfiguredError,
+    NextcloudAuthenticationFailedError,
+    NextcloudBaseUrlNotConfiguredError,
+    NextcloudDirectoryCreateFailedError,
+    NextcloudUploadFailedError,
+    NextcloudUsernameNotConfiguredError,
     UnsupportedFileFormatError,
     UnsupportedFileUrlSchemeError,
 )
@@ -19,15 +20,18 @@ NON_RETRYABLE_EXCEPTIONS = (
     UnsupportedFileFormatError,
     FileTooLargeError,
     EmptyDownloadedFileError,
-    StorageHostNotConfiguredError,
-    StorageUsernameNotConfiguredError,
-    StorageCredentialsNotConfiguredError,
-    StorageLibraryNotInstalledError,
-    StoragePrivateKeyNotFoundError,
-    StorageAuthenticationFailedError,
+    DownloadedFileContentMismatchError,
+    NextcloudBaseUrlNotConfiguredError,
+    NextcloudUsernameNotConfiguredError,
+    NextcloudAppPasswordNotConfiguredError,
+    NextcloudAuthenticationFailedError,
 )
 
-RETRYABLE_EXCEPTIONS = (StorageUploadFailedError,)
+RETRYABLE_EXCEPTIONS = (
+    DownloadedFileNotReadyError,
+    NextcloudDirectoryCreateFailedError,
+    NextcloudUploadFailedError,
+)
 
 KNOWN_PROCESSING_EXCEPTIONS = NON_RETRYABLE_EXCEPTIONS + RETRYABLE_EXCEPTIONS
 

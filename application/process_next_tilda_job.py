@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from loguru import logger
+
 from application.constants.tilda_job_status import TildaJobStatusId
 from application.dto.process_next_tilda_job import (
     ProcessNextTildaJobCommand,
@@ -12,7 +14,7 @@ from application.mappers import (
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
 from infrastructure.dto import DownloadedFile
 from infrastructure.file_downloader import FileDownloader
-from infrastructure.vps_file_storage import VpsFileStorage
+from infrastructure.nextcloud_file_storage import NextcloudFileStorage
 from setting import APP_TIMEZONE_INFO
 
 
@@ -21,7 +23,7 @@ class ProcessNextTildaJob:
         self,
         repository: TildaJobRepository,
         file_downloader: FileDownloader,
-        file_storage: VpsFileStorage,
+        file_storage: NextcloudFileStorage,
     ) -> None:
         self._repository = repository
         self._file_downloader = file_downloader
@@ -45,15 +47,34 @@ class ProcessNextTildaJob:
                 message="No queued Tilda jobs found",
             )
 
+        logger.info(
+            "Tilda job claimed: tilda_job_id={}, tran_id={}, file_url={}",
+            job.tilda_job_id,
+            job.tran_id,
+            job.file_url,
+        )
         downloaded_file: DownloadedFile | None = None
 
         try:
             downloaded_file = await self._file_downloader.download(job.file_url)
+            logger.info(
+                "Tilda job file downloaded: tilda_job_id={}, file_name={}, content_type={}, path={}",
+                job.tilda_job_id,
+                downloaded_file.file_name,
+                downloaded_file.content_type,
+                downloaded_file.path,
+            )
 
             upload_result = await self._file_storage.store_file(
                 file_path=downloaded_file.path,
                 file_name=downloaded_file.file_name,
                 content_type=downloaded_file.content_type,
+            )
+            logger.info(
+                "Tilda job file stored: tilda_job_id={}, stored_file_name={}, stored_file_path={}",
+                job.tilda_job_id,
+                upload_result.stored_file_name,
+                upload_result.stored_file_path,
             )
 
             await self._repository.mark_done(
@@ -74,6 +95,13 @@ class ProcessNextTildaJob:
             )
         except Exception as exc:
             error_message = get_processing_error_message(exc)
+            logger.warning(
+                "Tilda job processing failed: tilda_job_id={}, tran_id={}, error_type={}, error_message={}",
+                job.tilda_job_id,
+                job.tran_id,
+                type(exc).__name__,
+                error_message,
+            )
 
             if is_retryable_processing_error(exc) and job.attempt_count < command.max_attempts:
                 retry_at = datetime.now(APP_TIMEZONE_INFO) + timedelta(seconds=command.retry_delay_seconds)

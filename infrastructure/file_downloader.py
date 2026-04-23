@@ -5,6 +5,8 @@ from urllib.parse import unquote, urlparse
 from urllib.request import Request, urlopen
 
 from exceptions import (
+    DownloadedFileContentMismatchError,
+    DownloadedFileNotReadyError,
     EmptyDownloadedFileError,
     FileTooLargeError,
     UnsupportedFileFormatError,
@@ -85,6 +87,12 @@ class FileDownloader:
             if size_bytes == 0:
                 raise EmptyDownloadedFileError()
 
+            self._validate_downloaded_content(
+                file_path=temp_path,
+                file_name=file_name,
+                content_type=content_type,
+            )
+
             return DownloadedFile(
                 path=temp_path,
                 file_name=file_name,
@@ -112,3 +120,31 @@ class FileDownloader:
             return original_file_name
 
         return "downloaded_file"
+
+    def _validate_downloaded_content(
+        self,
+        *,
+        file_path: Path,
+        file_name: str,
+        content_type: str,
+    ) -> None:
+        with file_path.open("rb") as file:
+            prefix = file.read(4096).lstrip()
+        lower_prefix = prefix.lower()
+        is_html = (
+            lower_prefix.startswith(b"<!doctype html")
+            or lower_prefix.startswith(b"<html")
+            or (content_type == "text/html" and b"<html" in lower_prefix)
+        )
+        if not is_html:
+            return
+
+        html_text = prefix.decode("utf-8", errors="ignore").lower()
+        if (
+            "tilda: go to storage" in html_text
+            or "has not been uploaded to the file storage service yet" in html_text
+            or "try in 5 minutes" in html_text
+        ):
+            raise DownloadedFileNotReadyError(file_name)
+
+        raise DownloadedFileContentMismatchError(file_name)

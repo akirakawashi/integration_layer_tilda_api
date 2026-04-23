@@ -11,7 +11,7 @@ from application.process_next_tilda_job import ProcessNextTildaJob
 from infrastructure.database.provider import DatabaseProvider
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
 from infrastructure.file_downloader import FileDownloader
-from infrastructure.vps_file_storage import VpsFileStorage
+from infrastructure.nextcloud_file_storage import NextcloudFileStorage
 from setting import worker_config
 
 
@@ -23,7 +23,7 @@ class TildaJobWorker:
     ) -> None:
         self._stop_event = stop_event or asyncio.Event()
         self._file_downloader = FileDownloader()
-        self._file_storage = VpsFileStorage()
+        self._file_storage = NextcloudFileStorage()
 
         self._command = ProcessNextTildaJobCommand(
             worker_id=worker_config.id,
@@ -53,10 +53,11 @@ class TildaJobWorker:
                 continue
 
             logger.info(
-                "Tilda worker processed job: status={}, tilda_job_id={}, tran_id={}",
+                "Tilda worker processed job: status={}, tilda_job_id={}, tran_id={}, message={}",
                 result.status,
                 result.tilda_job_id,
                 result.tran_id,
+                result.message,
             )
 
         logger.info("Tilda worker stop signal received")

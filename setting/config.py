@@ -52,33 +52,29 @@ class DatabaseConfig(BaseSettings):
     max_overflow: int = Field(default=15, description="Maximum overflow size of the connection pool")
 
 
-class VpsStorageConfig(BaseSettings):
-    """Remote VPS file storage configuration settings"""
+class NextcloudStorageConfig(BaseSettings):
+    """Nextcloud WebDAV file storage configuration settings"""
 
     model_config = SettingsConfigDict(
-        env_prefix="VPS_STORAGE_",
+        env_prefix="NEXTCLOUD_",
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
     )
 
-    host: str = Field(default="", description="SSH host for remote VPS storage")
-    port: int = Field(default=22, description="SSH port for remote VPS storage")
-    username: str = Field(default="", description="SSH username for remote VPS storage")
-    password: SecretStr = Field(
-        default=SecretStr(""), description="Optional SSH password for remote VPS storage"
+    base_url: str = Field(default="", description="Base URL of the Nextcloud instance")
+    username: str = Field(default="", description="Nextcloud username")
+    app_password: SecretStr = Field(default=SecretStr(""), description="Nextcloud app password")
+    dav_user_id: str | None = Field(
+        default=None,
+        description="Optional Nextcloud WebDAV files user id if it differs from username",
     )
-    private_key_path: str | None = Field(
-        default=None, description="Optional path to SSH private key used for remote VPS storage"
-    )
-    remote_dir: str = Field(
-        default="upload", description="Remote directory on the VPS where files should be uploaded"
-    )
+    remote_dir: str = Field(default="tilda", description="Nextcloud directory for uploaded files")
     public_base_url: str | None = Field(
         default=None, description="Optional public base URL for uploaded files"
     )
-    timeout_seconds: int = Field(default=30, description="SSH upload timeout for remote VPS storage")
+    timeout_seconds: int = Field(default=30, description="WebDAV timeout for Nextcloud storage")
 
 
 class FileDownloaderConfig(BaseSettings):
@@ -134,6 +130,6 @@ class WorkerConfig(BaseSettings):
 
 app_config = AppConfig()
 database_config = DatabaseConfig()
-vps_storage_config = VpsStorageConfig()
+nextcloud_storage_config = NextcloudStorageConfig()
 file_downloader_config = FileDownloaderConfig()
 worker_config = WorkerConfig()

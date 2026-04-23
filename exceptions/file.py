@@ -21,3 +21,17 @@ class FileTooLargeError(Exception):
 class EmptyDownloadedFileError(Exception):
     def __init__(self) -> None:
         super().__init__("Скачанный файл пустой.")
+
+
+class DownloadedFileNotReadyError(Exception):
+    def __init__(self, file_name: str) -> None:
+        super().__init__(
+            f"Файл {file_name} еще не готов на стороне Tilda. Попробуем скачать позже."
+        )
+
+
+class DownloadedFileContentMismatchError(Exception):
+    def __init__(self, file_name: str) -> None:
+        super().__init__(
+            f"По ссылке на файл {file_name} пришла HTML-страница вместо файла."
+        )
