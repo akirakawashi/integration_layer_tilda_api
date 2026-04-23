@@ -47,6 +47,11 @@ class TildaJobRepository:
                         TildaJob.next_retry_at.is_not(None),
                         TildaJob.next_retry_at <= func.now(),
                     ),
+                    and_(
+                        TildaJob.tilda_job_status_id == processing_status_id,
+                        TildaJob.locked_until.is_not(None),
+                        TildaJob.locked_until < func.now(),
+                    ),
                 )
             )
             .where(
