@@ -4,6 +4,7 @@ from sqlalchemy import and_, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from exceptions import TildaJobConflictStateError, TildaJobNotFoundError
 from infrastructure.database.models import TildaJob, TildaJobStatusHistory
 from setting import APP_TIMEZONE_INFO
 
@@ -115,7 +116,7 @@ class TildaJobRepository:
             existing_result = await self._session.execute(existing_statement)
             existing_job = existing_result.scalar_one_or_none()
             if existing_job is None:
-                raise RuntimeError(f"Tilda job with tran_id={tran_id} was not found after conflict")
+                raise TildaJobConflictStateError(tran_id)
 
             return existing_job, True
 
@@ -130,7 +131,7 @@ class TildaJobRepository:
             job = await self._session.get(TildaJob, job_id)
 
             if job is None:
-                raise ValueError(f"Tilda job with id={job_id} was not found")
+                raise TildaJobNotFoundError(job_id)
 
             job.tilda_job_status_id = done_status_id
             job.locked_by = None
@@ -157,7 +158,7 @@ class TildaJobRepository:
             job = await self._session.get(TildaJob, job_id)
 
             if job is None:
-                raise ValueError(f"Tilda job with id={job_id} was not found")
+                raise TildaJobNotFoundError(job_id)
 
             job.tilda_job_status_id = retry_wait_status_id
             job.locked_by = None
@@ -183,7 +184,7 @@ class TildaJobRepository:
             job = await self._session.get(TildaJob, job_id)
 
             if job is None:
-                raise ValueError(f"Tilda job with id={job_id} was not found")
+                raise TildaJobNotFoundError(job_id)
 
             job.tilda_job_status_id = failed_status_id
             job.locked_by = None

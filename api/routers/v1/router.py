@@ -5,9 +5,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.routers.v1.helpers import extract_tilda_file_url
-from api.routers.v1.shemas import (
-    TildaWebhookAcceptedResponse,
-)
+from api.routers.v1.shemas import TildaWebhookAcceptedResponse
 from application.accept_tilda_webhook import AcceptTildaWebhook
 from application.dto.accept_tilda_webhook import AcceptTildaWebhookCommand
 from infrastructure.database.provider import DatabaseProvider
@@ -50,7 +48,7 @@ async def accept_tilda_webhook(
     if missing_fields:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Missing required Tilda fields: {', '.join(missing_fields)}",
+            detail=f"Отсутствуют обязательные поля Tilda: {', '.join(missing_fields)}",
         )
 
     use_case = AcceptTildaWebhook(

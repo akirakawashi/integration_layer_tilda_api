@@ -5,16 +5,17 @@ import uuid
 from pathlib import Path
 from urllib.parse import quote
 
+from exceptions import (
+    StorageAuthenticationFailedError,
+    StorageCredentialsNotConfiguredError,
+    StorageHostNotConfiguredError,
+    StorageLibraryNotInstalledError,
+    StoragePrivateKeyNotFoundError,
+    StorageUploadFailedError,
+    StorageUsernameNotConfiguredError,
+)
 from infrastructure.dto import StoredFileResult
 from setting import vps_storage_config
-
-
-class VpsStorageConfigurationError(RuntimeError):
-    pass
-
-
-class VpsStorageTemporaryError(RuntimeError):
-    pass
 
 
 class VpsFileStorage:
@@ -48,21 +49,19 @@ class VpsFileStorage:
         file_name: str,
     ) -> StoredFileResult:
         if not self._host:
-            raise VpsStorageConfigurationError("VPS storage host is not configured")
+            raise StorageHostNotConfiguredError()
         if not self._username:
-            raise VpsStorageConfigurationError("VPS storage username is not configured")
+            raise StorageUsernameNotConfiguredError()
         if not self._password and not self._private_key_path:
-            raise VpsStorageConfigurationError("VPS storage password or private key path is not configured")
+            raise StorageCredentialsNotConfiguredError()
 
         try:
             import paramiko
         except ImportError as exc:
-            raise VpsStorageConfigurationError("paramiko is not installed; run poetry install") from exc
+            raise StorageLibraryNotInstalledError() from exc
 
         if self._private_key_path and not Path(self._private_key_path).exists():
-            raise VpsStorageConfigurationError(
-                f"VPS storage private key was not found: {self._private_key_path}"
-            )
+            raise StoragePrivateKeyNotFoundError(self._private_key_path)
 
         remote_file_name = self._build_remote_file_name(file_name)
         remote_dir = self._normalize_remote_dir(self._remote_dir)
@@ -94,9 +93,9 @@ class VpsFileStorage:
             finally:
                 sftp_client.close()
         except paramiko.AuthenticationException as exc:
-            raise VpsStorageConfigurationError("VPS storage authentication failed") from exc
+            raise StorageAuthenticationFailedError() from exc
         except (paramiko.SSHException, socket.timeout, OSError) as exc:
-            raise VpsStorageTemporaryError(f"VPS storage upload failed: {exc}") from exc
+            raise StorageUploadFailedError() from exc
         finally:
             ssh_client.close()
 

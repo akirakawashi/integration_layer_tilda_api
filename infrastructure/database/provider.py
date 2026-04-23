@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
+from exceptions import DatabaseEngineNotInitializedError, SessionMakerNotInitializedError
 from setting.config import database_config
 
 
@@ -29,7 +30,7 @@ class DatabaseProvider:
             cls._session_maker = async_sessionmaker(cls._engine, expire_on_commit=False, class_=AsyncSession)
 
         if cls._session_maker is None:
-            raise RuntimeError("Session maker is not initialized")
+            raise SessionMakerNotInitializedError()
 
     @classmethod
     async def dispose_engine(cls) -> None:
@@ -46,7 +47,7 @@ class DatabaseProvider:
             await cls.init_engine()
 
         if cls._session_maker is None:
-            raise RuntimeError("Database engine is not initialized")
+            raise DatabaseEngineNotInitializedError()
 
         async with cls._session_maker() as session:
             try:

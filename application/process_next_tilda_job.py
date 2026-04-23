@@ -1,19 +1,18 @@
 from datetime import datetime, timedelta
-from urllib.error import HTTPError, URLError
 
 from application.constants.tilda_job_status import TildaJobStatusId
 from application.dto.process_next_tilda_job import (
     ProcessNextTildaJobCommand,
     ProcessNextTildaJobResult,
 )
+from application.mappers import (
+    get_processing_error_message,
+    is_retryable_processing_error,
+)
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
 from infrastructure.dto import DownloadedFile
 from infrastructure.file_downloader import FileDownloader
-from infrastructure.vps_file_storage import (
-    VpsFileStorage,
-    VpsStorageConfigurationError,
-    VpsStorageTemporaryError,
-)
+from infrastructure.vps_file_storage import VpsFileStorage
 from setting import APP_TIMEZONE_INFO
 
 
@@ -27,18 +26,6 @@ class ProcessNextTildaJob:
         self._repository = repository
         self._file_downloader = file_downloader
         self._file_storage = file_storage
-
-    def _is_retryable(self, exc: Exception) -> bool:
-        if isinstance(exc, (ValueError, VpsStorageConfigurationError)):
-            return False
-
-        if isinstance(exc, HTTPError):
-            return exc.code in {408, 429, 500, 502, 503, 504}
-
-        if isinstance(exc, (URLError, TimeoutError, VpsStorageTemporaryError)):
-            return True
-
-        return False
 
     async def execute(
         self,
@@ -86,9 +73,9 @@ class ProcessNextTildaJob:
                 stored_file_url=upload_result.stored_file_url,
             )
         except Exception as exc:
-            error_message = str(exc)
+            error_message = get_processing_error_message(exc)
 
-            if self._is_retryable(exc) and job.attempt_count < command.max_attempts:
+            if is_retryable_processing_error(exc) and job.attempt_count < command.max_attempts:
                 retry_at = datetime.now(APP_TIMEZONE_INFO) + timedelta(seconds=command.retry_delay_seconds)
                 await self._repository.mark_retry_wait(
                     job_id=job.tilda_job_id,

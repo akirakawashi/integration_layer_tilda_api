@@ -4,6 +4,12 @@ from tempfile import NamedTemporaryFile
 from urllib.parse import unquote, urlparse
 from urllib.request import Request, urlopen
 
+from exceptions import (
+    EmptyDownloadedFileError,
+    FileTooLargeError,
+    UnsupportedFileFormatError,
+    UnsupportedFileUrlSchemeError,
+)
 from infrastructure.dto import DownloadedFile
 from setting import file_downloader_config
 
@@ -28,7 +34,7 @@ class FileDownloader:
     def _download_sync(self, file_url: str) -> DownloadedFile:
         parsed_url = urlparse(file_url)
         if parsed_url.scheme not in {"http", "https"}:
-            raise ValueError("Only http and https file URLs are supported")
+            raise UnsupportedFileUrlSchemeError()
 
         request = Request(
             file_url,
@@ -44,10 +50,7 @@ class FileDownloader:
                 suffix = Path(file_name).suffix
                 extension = suffix.lower().lstrip(".")
                 if extension not in self._allowed_extensions:
-                    raise ValueError(
-                        "Unsupported file format. "
-                        f"Allowed formats: {', '.join(sorted(self._allowed_extensions))}"
-                    )
+                    raise UnsupportedFileFormatError(sorted(self._allowed_extensions))
 
                 temp_file = NamedTemporaryFile(
                     delete=False,
@@ -64,9 +67,7 @@ class FileDownloader:
                     and content_length.isdigit()
                     and int(content_length) > self._max_size_bytes
                 ):
-                    raise ValueError(
-                        f"File is too large. Maximum allowed size is {file_downloader_config.max_size_mb} MB"
-                    )
+                    raise FileTooLargeError(file_downloader_config.max_size_mb)
 
                 with temp_file:
                     size_bytes = 0
@@ -77,15 +78,12 @@ class FileDownloader:
 
                         size_bytes += len(chunk)
                         if size_bytes > self._max_size_bytes:
-                            raise ValueError(
-                                "File is too large. "
-                                f"Maximum allowed size is {file_downloader_config.max_size_mb} MB"
-                            )
+                            raise FileTooLargeError(file_downloader_config.max_size_mb)
 
                         temp_file.write(chunk)
 
             if size_bytes == 0:
-                raise ValueError("Downloaded file is empty")
+                raise EmptyDownloadedFileError()
 
             return DownloadedFile(
                 path=temp_path,
