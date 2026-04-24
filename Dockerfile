@@ -28,6 +28,6 @@ COPY . .
 
 RUN mkdir -p /app/storage/tilda_downloads
 
-EXPOSE 8003
+EXPOSE 8000
 
 CMD ["python", "-m", "api.app"]

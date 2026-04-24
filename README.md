@@ -90,8 +90,8 @@ poetry run python -m worker.main
 
 В репозитории уже есть:
 
-- [Dockerfile](/home/shiawase/ic8/integration_layer_tilda_api/Dockerfile:1): один image для `api` и `worker`
-- [docker-compose.yml](/home/shiawase/ic8/integration_layer_tilda_api/docker-compose.yml:1): основной compose-стек для `db`, `migrate`, `api` и `worker`
+- [Dockerfile] один image для `api` и `worker`
+- [docker-compose.yml] основной compose-стек для `db`, `migrate`, `api` и `worker`
 
 ### Первый запуск, когда базы данных ещё нет
 
@@ -100,20 +100,6 @@ docker compose build --no-cache
 docker compose up -d db
 docker compose --profile ops run --rm migrate
 docker compose up -d api worker
-```
-
-### Проверить состояние
-
-```bash
-docker compose ps
-docker compose logs --tail=100 api
-docker compose logs --tail=100 worker
-```
-
-### Остановить стек
-
-```bash
-docker compose down
 ```
 
 ## API Endpoint'ы
@@ -135,20 +121,10 @@ poetry run ruff check .
 poetry run python -m mypy .
 ```
 
-Автотестов в репозитории пока нет.
-
-## Ограничения И Допущения
-
-- API ожидает webhook в формате `application/x-www-form-urlencoded`
-- тестовый запрос Tilda с полем `test=test` принимается без создания записи в базе данных
-- worker поддерживает только архивы `zip` и `rar`
-- если Tilda присылает ссылку на `tupwidget.com`, worker извлекает из HTML прямую ссылку на `*.selstorage.ru`
-- `GET /health` сейчас не проверяет доступность PostgreSQL и Nextcloud, а показывает только то, что API-процесс запущен
-
 ## Примечания
 
 - `api` и `worker` — это отдельные процессы, но работают они на одной кодовой базе
 - при локальной разработке после изменения кода worker нужно перезапускать вручную
 - скачанные файлы временно сохраняются в `storage/tilda_downloads`
 - перед загрузкой worker валидирует тип архива
-- для масштабирования можно запускать несколько экземпляров worker'а на одной базе данных
+- для масштабирования можно запускать несколько экземпляров worker'а на одной базе данных (пока не готово)

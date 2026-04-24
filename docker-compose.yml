@@ -59,8 +59,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "${APP_PORT:-8003}:${APP_PORT:-8003}"
     command: ["python", "-m", "api.app"]
 
   worker:
