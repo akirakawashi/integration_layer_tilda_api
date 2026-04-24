@@ -1,17 +1,13 @@
-from infrastructure.downloader.providers.google_drive import (
-    build_google_drive_download_url,
-    extract_google_drive_file_id,
-)
-from infrastructure.downloader.providers.tupwidget import (
-    extract_tupwidget_storage_link,
-    get_tupwidget_fallback_file_name,
-    is_tupwidget_url,
+from infrastructure.downloader.providers.tilda_selectel import (
+    extract_tilda_selectel_storage_link,
+    get_tilda_storage_page_fallback_file_name,
+    is_selectel_storage_url,
+    is_tilda_storage_page_url,
 )
 
 __all__ = [
-    "build_google_drive_download_url",
-    "extract_google_drive_file_id",
-    "extract_tupwidget_storage_link",
-    "get_tupwidget_fallback_file_name",
-    "is_tupwidget_url",
+    "extract_tilda_selectel_storage_link",
+    "get_tilda_storage_page_fallback_file_name",
+    "is_selectel_storage_url",
+    "is_tilda_storage_page_url",
 ]

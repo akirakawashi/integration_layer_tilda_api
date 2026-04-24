@@ -1,3 +1,4 @@
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 from pydantic import Field, SecretStr
@@ -25,6 +26,31 @@ class AppConfig(BaseSettings):
     log_level: str = Field(default="INFO", description="Application log level")
     api_prefix: str = Field(default="/api/v1", description="API prefix")
     db_schema: str = Field(default="integration_tilda", description="Database schema used by this service")
+
+
+class WebhookAuthConfig(BaseSettings):
+    """Tilda webhook API key settings"""
+
+    model_config = SettingsConfigDict(
+        env_prefix="WEBHOOK_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+    api_key_transport: Literal["header", "post"] = Field(
+        default="header",
+        description="How Tilda sends the webhook API key: request header or POST field",
+    )
+    api_key_name: str = Field(
+        default="X-Tilda-Webhook-Key",
+        description="Header name or POST field name used by Tilda for the API key",
+    )
+    api_key: SecretStr = Field(
+        default=SecretStr(""),
+        description="Expected webhook API key value",
+    )
 
 
 class DatabaseConfig(BaseSettings):
@@ -133,6 +159,7 @@ class WorkerConfig(BaseSettings):
 
 
 app_config = AppConfig()
+webhook_auth_config = WebhookAuthConfig()
 database_config = DatabaseConfig()
 nextcloud_storage_config = NextcloudStorageConfig()
 file_downloader_config = FileDownloaderConfig()

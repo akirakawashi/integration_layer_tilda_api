@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.routers.v1.helpers import extract_tilda_file_url
+from api.routers.v1.helpers import extract_tilda_file_url, validate_webhook_api_key
 from application.accept_tilda_webhook import AcceptTildaWebhook
 from application.dto.accept_tilda_webhook import AcceptTildaWebhookCommand
 from infrastructure.database.provider import DatabaseProvider
@@ -24,6 +24,7 @@ async def accept_tilda_webhook(
 ) -> PlainTextResponse:
     payload_bytes = await request.body()
     payload = dict(parse_qsl(payload_bytes.decode("utf-8"), keep_blank_values=True))
+    payload = validate_webhook_api_key(request=request, payload=payload)
 
     if payload.get("test") == "test":
         return PlainTextResponse("ok", status_code=status.HTTP_200_OK)

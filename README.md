@@ -1,6 +1,6 @@
 # integration_layer_tilda_api
 
-Сервис для приёма webhook'ов из Tilda, создания фоновых задач, скачивания загруженных архивов и сохранения их в Nextcloud.
+Сервис для приёма webhook'ов из Tilda, создания фоновых задач, резолва Tilda storage page в прямую ссылку Selectel, скачивания архивов и сохранения их в Nextcloud.
 
 ## Что Делает Сервис
 
@@ -16,7 +16,7 @@
 1. Tilda отправляет webhook на `POST /api/v1/webhooks/tilda`
 2. API сохраняет задачу в PostgreSQL со статусом `queued`
 3. Worker забирает следующую доступную задачу
-4. Worker скачивает файл, валидирует архив и загружает его в Nextcloud
+4. Worker получает прямую ссылку на архив из Selectel, скачивает файл, валидирует архив и загружает его в Nextcloud
 5. Статус задачи обновляется на `done`, `retry_wait` или `failed`
 
 ## Структура Проекта
@@ -26,7 +26,7 @@
 - [worker/main.py](/home/shiawase/ic8/integration_layer_tilda_api/worker/main.py:1): точка входа worker'а
 - [application/](/home/shiawase/ic8/integration_layer_tilda_api/application): use case'ы
 - [infrastructure/database/](/home/shiawase/ic8/integration_layer_tilda_api/infrastructure/database): модели, provider, repository
-- [infrastructure/downloader/](/home/shiawase/ic8/integration_layer_tilda_api/infrastructure/downloader): логика скачивания и валидации файлов
+- [infrastructure/downloader/](/home/shiawase/ic8/integration_layer_tilda_api/infrastructure/downloader): логика резолва Tilda storage page, скачивания и валидации файлов
 - [infrastructure/uploader/](/home/shiawase/ic8/integration_layer_tilda_api/infrastructure/uploader): логика загрузки в Nextcloud
 - [alembic/](/home/shiawase/ic8/integration_layer_tilda_api/alembic): миграции базы данных
 
@@ -146,5 +146,6 @@ poetry run mypy .
 
 - `api` и `worker` — это отдельные процессы, но работают они на одной кодовой базе
 - при локальной разработке после изменения кода worker нужно перезапускать вручную
+- если Tilda присылает ссылку на `tupwidget.com`, worker извлекает из HTML прямую ссылку на `*.selstorage.ru`
 - скачанные файлы временно сохраняются в `storage/tilda_downloads`
 - перед загрузкой worker валидирует тип архива

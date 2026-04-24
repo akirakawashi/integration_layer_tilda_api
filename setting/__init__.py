@@ -5,6 +5,7 @@ from setting.config import (
     database_config,
     file_downloader_config,
     nextcloud_storage_config,
+    webhook_auth_config,
     worker_config,
 )
 
@@ -15,5 +16,6 @@ __all__ = [
     "database_config",
     "file_downloader_config",
     "nextcloud_storage_config",
+    "webhook_auth_config",
     "worker_config",
 ]
