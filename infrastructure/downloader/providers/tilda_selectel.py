@@ -7,7 +7,7 @@ TILDA_STORAGE_PAGE_HOSTS = {"tupwidget.com", "www.tupwidget.com"}
 SELECTEL_STORAGE_HOSTS = {"selstorage.ru", "www.selstorage.ru"}
 
 ANCHOR_LINK_PATTERN = re.compile(
-    r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>',
+    r"""<a\b[^>]*\bhref\s*=\s*(['"])(.*?)\1[^>]*>(.*?)</a>""",
     flags=re.IGNORECASE | re.DOTALL,
 )
 
@@ -25,8 +25,8 @@ def extract_tilda_selectel_storage_link(html_text: str) -> tuple[str | None, str
     first_link: tuple[str, str | None] | None = None
 
     for match in ANCHOR_LINK_PATTERN.finditer(html_text):
-        storage_url = unquote(unescape(match.group(1).strip()))
-        storage_file_name = re.sub(r"<[^>]+>", "", match.group(2)).strip() or None
+        storage_url = unescape(match.group(2).strip())
+        storage_file_name = re.sub(r"<[^>]+>", "", match.group(3)).strip() or None
 
         if first_link is None:
             first_link = (storage_url, storage_file_name)

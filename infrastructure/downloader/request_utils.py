@@ -1,18 +1,40 @@
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 from loguru import logger
 
 from exceptions import UnsupportedFileUrlSchemeError
 
+PATH_SAFE_CHARS = "/:@!$&'()*+,;=%"
+QUERY_SAFE_CHARS = "/?:@!$'()*+,;=%&="
+
+
+def normalize_http_url(file_url: str) -> str:
+    parsed_url = urlsplit(file_url.strip())
+
+    normalized_path = quote(parsed_url.path, safe=PATH_SAFE_CHARS)
+    normalized_query = quote(parsed_url.query, safe=QUERY_SAFE_CHARS)
+    normalized_fragment = quote(parsed_url.fragment, safe=QUERY_SAFE_CHARS)
+
+    return urlunsplit(
+        (
+            parsed_url.scheme,
+            parsed_url.netloc,
+            normalized_path,
+            normalized_query,
+            normalized_fragment,
+        )
+    )
+
 
 def build_request(file_url: str) -> Request:
-    parsed_url = urlparse(file_url)
+    normalized_url = normalize_http_url(file_url)
+    parsed_url = urlparse(normalized_url)
     if parsed_url.scheme not in {"http", "https"}:
         raise UnsupportedFileUrlSchemeError()
 
     return Request(
-        file_url,
+        normalized_url,
         headers={
             "User-Agent": "tilda-api-file-downloader/1.0",
         },
