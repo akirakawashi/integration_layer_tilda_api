@@ -77,8 +77,8 @@ poetry run python -m api.app
 
 API будет доступен по адресам:
 
-- `http://localhost:8003/health`
-- `http://localhost:8003/docs`
+- `http://localhost:8000/health`
+- `http://localhost:8000/docs`
 
 ### 5. Запустить worker во втором терминале
 
