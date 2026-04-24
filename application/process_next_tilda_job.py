@@ -9,6 +9,7 @@ from application.dto.process_next_tilda_job import (
 )
 from application.mappers import (
     get_processing_error_message,
+    is_expected_processing_error,
     is_retryable_processing_error,
 )
 from infrastructure.database.repository.tilda_job_repository import TildaJobRepository
@@ -48,13 +49,6 @@ class ProcessNextTildaJob:
                 message="No queued Tilda jobs found",
             )
 
-        logger.info(
-            "Tilda job claimed: tilda_job_id={}, tran_id={}, attempt_count={}, file_url={}",
-            job.tilda_jobs_id,
-            job.tran_id,
-            job.attempt_count,
-            job.file_url,
-        )
         job_id = job.tilda_jobs_id
         if job_id is None:
             raise RuntimeError("Claimed Tilda job is missing primary key.")
@@ -63,17 +57,6 @@ class ProcessNextTildaJob:
 
         try:
             downloaded_file = await self._file_downloader.download(job.file_url)
-            logger.info(
-                (
-                    "Tilda job file downloaded: tilda_job_id={}, file_name={}, "
-                    "content_type={}, size_bytes={}, path={}"
-                ),
-                job.tilda_jobs_id,
-                downloaded_file.file_name,
-                downloaded_file.content_type,
-                downloaded_file.size_bytes,
-                downloaded_file.path,
-            )
             stored_file_name = build_job_stored_file_name(job_id, downloaded_file.file_name)
 
             upload_result = await self._file_storage.store_file(
@@ -82,21 +65,20 @@ class ProcessNextTildaJob:
                 stored_file_name=stored_file_name,
                 content_type=downloaded_file.content_type,
             )
-            logger.info(
-                (
-                    "Tilda job file stored: tilda_job_id={}, stored_file_name={}, "
-                    "stored_file_path={}, stored_file_url={}"
-                ),
-                job.tilda_jobs_id,
-                upload_result.stored_file_name,
-                upload_result.stored_file_path,
-                upload_result.stored_file_url,
-            )
-
             await self._repository.mark_done(
                 job_id=job_id,
                 done_status_id=TildaJobStatusId.DONE,
                 stored_file_name=upload_result.stored_file_name,
+            )
+            logger.info(
+                (
+                    "Tilda-задача успешно обработана: tilda_job_id={}, tran_id={}, "
+                    "stored_file_name={}, stored_file_url={}"
+                ),
+                job_id,
+                job.tran_id,
+                upload_result.stored_file_name,
+                upload_result.stored_file_url,
             )
 
             return ProcessNextTildaJobResult(
@@ -111,32 +93,21 @@ class ProcessNextTildaJob:
             )
         except Exception as exc:
             error_message = get_processing_error_message(exc)
-            logger.opt(exception=exc).warning(
-                (
-                    "Tilda job processing failed: tilda_job_id={}, tran_id={}, attempt_count={}, "
-                    "max_attempts={}, error_type={}, error_message={}"
-                ),
-                job.tilda_jobs_id,
-                job.tran_id,
-                job.attempt_count,
-                command.max_attempts,
-                type(exc).__name__,
-                error_message,
-            )
 
             if is_retryable_processing_error(exc) and job.attempt_count < command.max_attempts:
                 retry_at = datetime.now(APP_TIMEZONE_INFO) + timedelta(seconds=command.retry_delay_seconds)
-                logger.info(
-                    "Tilda job scheduled for retry: tilda_job_id={}, retry_at={}, retry_delay_seconds={}",
-                    job.tilda_jobs_id,
-                    retry_at,
-                    command.retry_delay_seconds,
-                )
                 await self._repository.mark_retry_wait(
                     job_id=job_id,
                     retry_wait_status_id=TildaJobStatusId.RETRY_WAIT,
                     error_message=error_message,
                     retry_at=retry_at,
+                )
+                logger.info(
+                    "{} tilda_job_id={}, tran_id={}, retry_at={}",
+                    error_message,
+                    job_id,
+                    job.tran_id,
+                    retry_at,
                 )
 
                 return ProcessNextTildaJobResult(
@@ -147,17 +118,26 @@ class ProcessNextTildaJob:
                     tran_id=job.tran_id,
                 )
 
-            logger.info(
-                "Tilda job marked as failed: tilda_job_id={}, tran_id={}, attempt_count={}",
-                job.tilda_jobs_id,
-                job.tran_id,
-                job.attempt_count,
-            )
             await self._repository.mark_failed(
                 job_id=job_id,
                 failed_status_id=TildaJobStatusId.FAILED,
                 error_message=error_message,
             )
+            if is_expected_processing_error(exc):
+                logger.warning(
+                    "{} tilda_job_id={}, tran_id={}, attempt_count={}, max_attempts={}",
+                    error_message,
+                    job_id,
+                    job.tran_id,
+                    job.attempt_count,
+                    command.max_attempts,
+                )
+            else:
+                logger.exception(
+                    "Непредвиденная ошибка при обработке Tilda-задачи: tilda_job_id={}, tran_id={}",
+                    job_id,
+                    job.tran_id,
+                )
 
             return ProcessNextTildaJobResult(
                 processed=True,

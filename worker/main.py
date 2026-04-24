@@ -13,6 +13,9 @@ from infrastructure.database.repository.tilda_job_repository import TildaJobRepo
 from infrastructure.file_downloader import FileDownloader
 from infrastructure.nextcloud_file_storage import NextcloudFileStorage
 from setting import worker_config
+from setting.logging import configure_logging
+
+configure_logging()
 
 
 class TildaJobWorker:
@@ -52,7 +55,7 @@ class TildaJobWorker:
                 await self._sleep_or_stop(worker_config.poll_interval_seconds)
                 continue
 
-            logger.info(
+            logger.debug(
                 "Tilda worker processed job: status={}, tilda_job_id={}, tran_id={}, message={}",
                 result.status,
                 result.tilda_job_id,

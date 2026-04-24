@@ -33,7 +33,7 @@ def validate_downloaded_content(
     )
     if is_html:
         html_text = stripped_prefix.decode("utf-8", errors="ignore").lower()
-        logger.warning(
+        logger.debug(
             "Downloaded HTML instead of file: file_name={}, content_type={}, html_preview={}",
             file_name,
             content_type,
@@ -58,14 +58,14 @@ def raise_for_html_document(
         or "has not been uploaded to the file storage service yet" in html_text
         or "try in 5 minutes" in html_text
     ):
-        logger.warning(
+        logger.debug(
             "Tilda storage reports file is not ready yet: file_name={}, html_preview={}",
             file_name,
             summarize_html(html_text),
         )
         raise DownloadedFileNotReadyError(file_name)
 
-    logger.warning(
+    logger.debug(
         "Remote server returned unexpected HTML page instead of file: file_name={}, html_preview={}",
         file_name,
         summarize_html(html_text),
@@ -83,7 +83,7 @@ def validate_archive_signature(
     if suffix == ".zip":
         if zipfile.is_zipfile(file_path):
             return
-        logger.warning(
+        logger.debug(
             "Downloaded file failed ZIP signature check: file_name={}, prefix_hex={}",
             file_name,
             prefix[:16].hex(),
@@ -93,7 +93,7 @@ def validate_archive_signature(
     if suffix == ".rar":
         if prefix.startswith((RAR4_SIGNATURE, RAR5_SIGNATURE)):
             return
-        logger.warning(
+        logger.debug(
             "Downloaded file failed RAR signature check: file_name={}, prefix_hex={}",
             file_name,
             prefix[:16].hex(),

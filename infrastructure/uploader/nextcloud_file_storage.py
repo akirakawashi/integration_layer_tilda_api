@@ -58,7 +58,7 @@ class NextcloudFileStorage:
             stored_file_name = build_stored_file_name(file_name)
         remote_dir = normalize_remote_dir(self._remote_dir)
         remote_file_path = posixpath.join(remote_dir, stored_file_name) if remote_dir else stored_file_name
-        logger.info(
+        logger.debug(
             (
                 "Uploading file to Nextcloud: base_url={}, username={}, dav_user_id={}, "
                 "remote_dir={}, source_file_name={}, stored_file_name={}, "

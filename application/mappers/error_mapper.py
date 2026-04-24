@@ -36,6 +36,11 @@ RETRYABLE_EXCEPTIONS = (
 )
 
 KNOWN_PROCESSING_EXCEPTIONS = NON_RETRYABLE_EXCEPTIONS + RETRYABLE_EXCEPTIONS
+EXPECTED_PROCESSING_EXCEPTIONS = KNOWN_PROCESSING_EXCEPTIONS + (
+    HTTPError,
+    URLError,
+    TimeoutError,
+)
 
 
 def is_retryable_processing_error(exc: Exception) -> bool:
@@ -49,6 +54,10 @@ def is_retryable_processing_error(exc: Exception) -> bool:
         return True
 
     return False
+
+
+def is_expected_processing_error(exc: Exception) -> bool:
+    return isinstance(exc, EXPECTED_PROCESSING_EXCEPTIONS)
 
 
 def get_processing_error_message(exc: Exception) -> str:

@@ -7,6 +7,9 @@ from api.routers.v1.router import router as v1_router
 from api.routers.v1.shemas import HealthResponse
 from infrastructure.database.provider import DatabaseProvider
 from setting import app_config
+from setting.logging import configure_logging
+
+configure_logging()
 
 
 @asynccontextmanager

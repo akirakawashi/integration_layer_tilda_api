@@ -22,6 +22,7 @@ class AppConfig(BaseSettings):
     host: str = Field(default="0.0.0.0", description="The host address of the application")
     port: int = Field(default=8003, description="The port number of the application")
     debug: bool = Field(default=False, description="Enable debug mode")
+    log_level: str = Field(default="INFO", description="Application log level")
     api_prefix: str = Field(default="/api/v1", description="API prefix")
     db_schema: str = Field(default="integration_tilda", description="Database schema used by this service")
 

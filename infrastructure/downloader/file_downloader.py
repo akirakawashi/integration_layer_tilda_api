@@ -37,7 +37,7 @@ class FileDownloader:
             file_url,
             timeout_seconds=self._timeout_seconds,
         )
-        logger.info(
+        logger.debug(
             "Downloading file: original_url={}, resolved_url={}, suggested_file_name={}",
             file_url,
             resolved_url,
@@ -51,7 +51,7 @@ class FileDownloader:
                 final_url = getattr(response, "geturl", lambda: resolved_url)()
                 content_type = response.headers.get_content_type()
                 content_length = response.headers.get("Content-Length")
-                logger.info(
+                logger.debug(
                     (
                         "File download response received: original_url={}, resolved_url={}, "
                         "final_url={}, content_type={}, content_length={}"
@@ -70,7 +70,7 @@ class FileDownloader:
                 suffix = Path(file_name).suffix
                 extension = suffix.lower().lstrip(".")
                 if extension not in self._allowed_extensions:
-                    logger.warning(
+                    logger.debug(
                         (
                             "Downloaded file has unsupported extension: file_name={}, "
                             "extension={}, allowed_extensions={}"
@@ -94,7 +94,7 @@ class FileDownloader:
                     and content_length.isdigit()
                     and int(content_length) > self._max_size_bytes
                 ):
-                    logger.warning(
+                    logger.debug(
                         (
                             "Downloaded file exceeds declared size limit: file_name={}, "
                             "declared_size_bytes={}, max_size_bytes={}"
@@ -114,7 +114,7 @@ class FileDownloader:
 
                         size_bytes += len(chunk)
                         if size_bytes > self._max_size_bytes:
-                            logger.warning(
+                            logger.debug(
                                 (
                                     "Downloaded file exceeded size limit while streaming: "
                                     "file_name={}, current_size_bytes={}, max_size_bytes={}"
@@ -128,7 +128,7 @@ class FileDownloader:
                         temp_file.write(chunk)
 
             if size_bytes == 0:
-                logger.warning("Downloaded file is empty: file_name={}, url={}", file_name, resolved_url)
+                logger.debug("Downloaded file is empty: file_name={}, url={}", file_name, resolved_url)
                 raise EmptyDownloadedFileError()
 
             validate_downloaded_content(
@@ -136,7 +136,7 @@ class FileDownloader:
                 file_name=file_name,
                 content_type=content_type,
             )
-            logger.info(
+            logger.debug(
                 "File download validated successfully: file_name={}, size_bytes={}, temp_path={}",
                 file_name,
                 size_bytes,
@@ -151,7 +151,7 @@ class FileDownloader:
             )
 
         except Exception as exc:
-            logger.warning(
+            logger.debug(
                 "File download failed: original_url={}, resolved_url={}, error_type={}, error_message={}",
                 file_url,
                 resolved_url,

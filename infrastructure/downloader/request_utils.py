@@ -23,7 +23,7 @@ def fetch_text_response(file_url: str, *, timeout_seconds: int) -> str:
     request = build_request(file_url)
     with urlopen(request, timeout=timeout_seconds) as response:
         final_url = getattr(response, "geturl", lambda: file_url)()
-        logger.info(
+        logger.debug(
             "Fetched text response: request_url={}, final_url={}, content_type={}",
             file_url,
             final_url,

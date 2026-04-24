@@ -19,22 +19,16 @@ def resolve_download_source(
     google_drive_file_id = extract_google_drive_file_id(file_url)
     if google_drive_file_id is not None:
         resolved_url = build_google_drive_download_url(google_drive_file_id)
-        logger.info(
-            "Resolved Google Drive file link: original_url={}, file_id={}, resolved_url={}",
-            file_url,
-            google_drive_file_id,
-            resolved_url,
-        )
         return resolved_url, None
 
     if not is_tupwidget_url(file_url):
         return file_url, None
 
-    logger.info("Resolving Tilda storage page: tupwidget_url={}", file_url)
+    logger.debug("Resolving Tilda storage page: tupwidget_url={}", file_url)
     html_text = fetch_text_response(file_url, timeout_seconds=timeout_seconds)
     storage_url, storage_file_name = extract_tupwidget_storage_link(html_text)
     if storage_url is None:
-        logger.warning(
+        logger.debug(
             "Could not extract storage link from Tilda page: tupwidget_url={}, html_preview={}",
             file_url,
             summarize_html(html_text),
@@ -44,7 +38,7 @@ def resolve_download_source(
             file_name=get_tupwidget_fallback_file_name(file_url),
         )
 
-    logger.info(
+    logger.debug(
         "Resolved Tilda storage link: tupwidget_url={}, storage_url={}, storage_file_name={}",
         file_url,
         storage_url,

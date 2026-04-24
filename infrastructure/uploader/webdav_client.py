@@ -63,20 +63,20 @@ def ensure_remote_dir(
                 logger.debug("Nextcloud directory already exists: {}", directory_path)
                 continue
             if exc.code in {401, 403}:
-                logger.warning(
+                logger.debug(
                     "Nextcloud authentication failed while creating directory: directory={}, status={}",
                     directory_path,
                     exc.code,
                 )
                 raise NextcloudAuthenticationFailedError() from exc
-            logger.warning(
+            logger.debug(
                 "Nextcloud directory creation failed: directory={}, status={}",
                 directory_path,
                 exc.code,
             )
             raise NextcloudDirectoryCreateFailedError(exc.code) from exc
         except (TimeoutError, URLError, OSError) as exc:
-            logger.warning(
+            logger.debug(
                 (
                     "Nextcloud directory creation failed with transport error: "
                     "directory={}, error_type={}, error_message={}"
@@ -125,20 +125,20 @@ def upload_file(
                 raise NextcloudUploadFailedError(response.status)
     except HTTPError as exc:
         if exc.code in {401, 403}:
-            logger.warning(
+            logger.debug(
                 "Nextcloud authentication failed while uploading file: remote_file_path={}, status={}",
                 remote_file_path,
                 exc.code,
             )
             raise NextcloudAuthenticationFailedError() from exc
-        logger.warning(
+        logger.debug(
             "Nextcloud upload failed: remote_file_path={}, status={}",
             remote_file_path,
             exc.code,
         )
         raise NextcloudUploadFailedError(exc.code) from exc
     except (TimeoutError, URLError, OSError) as exc:
-        logger.warning(
+        logger.debug(
             (
                 "Nextcloud upload failed with transport error: "
                 "remote_file_path={}, error_type={}, error_message={}"
