@@ -1,0 +1,12 @@
+.git
+.gitignore
+.mypy_cache
+.ruff_cache
+.vscode
+.codex
+.env
+.venv
+__pycache__/
+*.py[cod]
+storage/tilda_downloads/*
+!storage/tilda_downloads/.gitkeep

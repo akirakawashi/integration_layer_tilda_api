@@ -18,5 +18,68 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${APP_IMAGE:-api-tilda:local}
+    profiles: ["ops"]
+    restart: "no"
+    init: true
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["alembic", "upgrade", "head"]
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${APP_IMAGE:-api-tilda:local}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      APP_HOST: 0.0.0.0
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8003}:${APP_PORT:-8003}"
+    command: ["python", "-m", "api.app"]
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${APP_IMAGE:-api-tilda:local}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    stop_grace_period: 40s
+    command: ["python", "-m", "worker.main"]
+
 volumes:
   postgres_data:
