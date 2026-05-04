@@ -424,9 +424,3 @@ docker compose up -d api worker
 - `attempt_count`, `last_error_message`, `next_retry_at` - служебные поля обработки;
 - `stored_file_name` - имя файла после успешной загрузки.
 
-## Что можно улучшить дальше
-
-- добавить `.env.example`, чтобы onboarding стал полностью самодостаточным;
-- вынести metrics/observability по очереди и ошибкам;
-- добавить endpoint или admin-view для просмотра состояния задач;
-- покрыть use case'ы тестами на duplicate webhook, retry и content validation.
